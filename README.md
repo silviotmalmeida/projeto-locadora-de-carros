@@ -57,6 +57,10 @@ Principais comandos do laravel:
 
 - Para criar uma model e sua migration utiliza-se o comando, na pasta raiz do projeto: php artisan make:model nome-da-model -m
 
+- Para criar uma model com sua migration e controller utiliza-se o comando, na pasta raiz do projeto: php artisan make:model --migration --controller --resource nome-da-model, ou na sua forma abreviada, php artisan make:model -mcr nome-da-model
+
+- Para criar uma model com sua migration, controller e seeder utiliza-se o comando, na pasta raiz do projeto: php artisan make:model --all nome-da-model, ou na sua forma abreviada, php artisan make:model -a nome-da-model
+
 - Para criar um seeder de dados utiliza-se o comando, na pasta raiz do projeto: php artisan make:seeder nome-da-model-Seeder
 
 - Para criar uma factory de objetos utiliza-se o comando, na pasta raiz do projeto: php artisan make:factory nome-da-model-Factory --model=nome-da-model 
