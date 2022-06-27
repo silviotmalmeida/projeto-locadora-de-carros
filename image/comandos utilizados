@@ -1,0 +1,54 @@
+sudo docker run -it ubuntu:20.04
+
+    apt update
+
+
+    # dependências básicas
+    apt install php7.4 php7.4-sqlite3 php7.4-mbstring php7.4-dom php7.4-zip zip unzip wget git systemctl -y
+
+
+    # instalando o composer
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+
+    php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+
+    php composer-setup.php
+
+    php -r "unlink('composer-setup.php');"
+
+    mv composer.phar /usr/local/bin/composer
+
+
+    # # instalando o nodejs
+    # wget https://nodejs.org/dist/v16.15.0/node-v16.15.0-linux-x64.tar.xz
+
+    # tar -xJvf node-v16.15.0-linux-x64.tar.xz -C /usr/local/lib
+
+    # echo 'export PATH=$PATH:/usr/local/lib/node-v16.15.0-linux-x64/bin' >> /root/.bashrc
+
+    # . ~/.bashrc
+
+
+    # # instalando o mailhog
+    # apt install golang-go -y
+
+    # mkdir gocode
+
+    # echo "export GOPATH=$HOME/gocode" >> ~/.profile
+
+    # source ~/.profile
+
+    # go get github.com/mailhog/MailHog
+
+    # go get github.com/mailhog/mhsendmail
+
+    # cp /root/gocode/bin/MailHog /usr/local/bin/mailhog
+
+    # cp /root/gocode/bin/mhsendmail /usr/local/bin/mhsendmail
+    
+    # exit
+
+sudo docker commit (id do container obtido em sudo docker ps -a) locadora-de-carros-laravel
+
+sudo docker save locadora-de-carros-laravel > locadora-de-carros-laravel.tar
+

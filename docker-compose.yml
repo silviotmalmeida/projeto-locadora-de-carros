@@ -1,0 +1,25 @@
+version: '3.5'
+
+services:
+
+  #nome do servico
+  locadora-de-carros-laravel:
+
+    #construido a partir de uma imagem customizada em ./image
+    image: locadora-de-carros-laravel
+    
+    #nome do conteiner
+    container_name: locadora-de-carros-laravel
+
+    #pastas compartilhadas
+    volumes:
+      #pasta do codigo fonte da aplicacao
+      - "./app:/root/app"
+
+    #porta a ser exposta
+    ports:
+      - 8080:8080
+      - 8025:8025
+  
+    #artifício para manter o container aberto
+    tty: true
