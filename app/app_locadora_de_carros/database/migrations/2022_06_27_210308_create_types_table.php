@@ -14,18 +14,24 @@ class CreateTypesTable extends Migration
     public function up()
     {
         Schema::create('types', function (Blueprint $table) {
+
+            // colunas padrão do laravel
             $table->id();
-            $table->unsignedBigInteger('marca_id');
-            $table->string('nome', 30);
-            $table->string('imagem', 100);
-            $table->integer('numero_portas');
-            $table->integer('lugares');
-            $table->boolean('air_bag');
-            $table->boolean('abs');
             $table->timestamps();
 
-            //foreign key (constraints)
-            $table->foreign('marca_id')->references('id')->on('marcas');
+            // colunas personalizadas da tabela
+            $table->string('name', 30);
+            $table->string('image', 100);
+            $table->integer('qtd_doors');
+            $table->integer('qtd_seats');
+            $table->boolean('air_bag');
+            $table->boolean('abs');
+
+            // configuração da chave estrangeira para a tabela brands (um para muitos):
+            //// criação da coluna
+            $table->unsignedBigInteger('brand_id');
+            //// adição da restrição de integridade referencial
+            $table->foreign('brand_id')->references('id')->on('brands');
         });
     }
 

@@ -21,7 +21,7 @@ class CreateBrandsTable extends Migration
             
             // colunas personalizadas da tabela
             $table->string('name', 30)->unique();
-            $table->string('image', 100)->comment('Caminho para a imagem da logomarca');
+            $table->string('image', 100);
 
             // coluna para permitir o soft delete
             $table->softDeletes();

@@ -14,20 +14,33 @@ class CreateLocationsTable extends Migration
     public function up()
     {
         Schema::create('locations', function (Blueprint $table) {
+
+            // colunas padrão do laravel
             $table->id();
-            $table->unsignedBigInteger('cliente_id');
-            $table->unsignedBigInteger('carro_id');
-            $table->dateTime('data_inicio_periodo');
-            $table->dateTime('data_final_previsto_periodo');
-            $table->dateTime('data_final_realizado_periodo');
-            $table->float('valor_diaria', 8, 2);
-            $table->integer('km_inicial');
-            $table->integer('km_final');
             $table->timestamps();
 
-            //foreign key (constraints)
-            $table->foreign('cliente_id')->references('id')->on('clientes');
-            $table->foreign('carro_id')->references('id')->on('carros');
+            // colunas personalizadas da tabela
+            $table->dateTime('initial_date');
+            $table->dateTime('final_date_estimated');
+            $table->dateTime('final_date');
+            $table->float('daily_value', 8, 2);
+            $table->integer('initial_km');
+            $table->integer('final_km');
+
+            // configuração da chave estrangeira para a tabela clients (um para muitos):
+            //// criação da coluna
+            $table->unsignedBigInteger('client_id');
+            //// adição da restrição de integridade referencial
+            $table->foreign('client_id')->references('id')->on('clients');
+
+            // configuração da chave estrangeira para a tabela cars (um para muitos):
+            //// criação da coluna
+            $table->unsignedBigInteger('car_id');
+            //// adição da restrição de integridade referencial
+            $table->foreign('car_id')->references('id')->on('cars');
+
+            // coluna para permitir o soft delete
+            $table->softDeletes();
         });
     }
 

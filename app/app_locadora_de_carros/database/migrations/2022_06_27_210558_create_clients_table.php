@@ -14,9 +14,16 @@ class CreateClientsTable extends Migration
     public function up()
     {
         Schema::create('clients', function (Blueprint $table) {
+
+            // colunas padrão do laravel
             $table->id();
-            $table->string('nome', 30);
             $table->timestamps();
+
+            // colunas personalizadas da tabela
+            $table->string('nome', 30);
+
+            // coluna para permitir o soft delete
+            $table->softDeletes();
         });
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BrandController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,20 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+
+// definindo as rotas de Brand
+Route::apiResource('brand', 'App\Http\Controllers\BrandController');
+
+// definindo as rotas de Type
+Route::apiResource('type', 'App\Http\Controllers\TypeController');
+
+// definindo as rotas de Car
+Route::apiResource('car', 'App\Http\Controllers\CarController');
+
+// definindo as rotas de Client
+Route::apiResource('client', 'App\Http\Controllers\ClientController');
+
+// definindo as rotas de Location
+Route::apiResource('location', 'App\Http\Controllers\LocationController');
