@@ -14,7 +14,7 @@ services:
     #pastas compartilhadas
     volumes:
       #pasta do codigo fonte da aplicacao
-      - "./app:/root/app"
+      - "./app/backend:/root/app"
 
     #porta a ser exposta
     ports:
