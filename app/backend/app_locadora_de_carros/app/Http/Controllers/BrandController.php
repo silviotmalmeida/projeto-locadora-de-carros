@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 
+// dependência para gerenciamento do storage
+use Illuminate\Support\Facades\Storage;
+
 class BrandController extends Controller
 {
 
@@ -49,9 +52,9 @@ class BrandController extends Controller
         // obtendo os dados da imagem submetida na requisição
         $img = $request->file('image');
 
-        // salvando o arquivo de imagem na pasta app/storage/app/public/images
+        // salvando o arquivo de imagem na pasta app/storage/app/public/images/brands
         // e obtendo o seu respectivo nome
-        $img_urn = $img->store('images', 'public');
+        $img_urn = $img->store('images/brands', 'public');
 
         // insere os dados no BD
         $brand = $this->brand->create([
@@ -122,8 +125,32 @@ class BrandController extends Controller
             $request->validate($this->brand->rules($id), $this->brand->feedback());
         }
 
+        // se existir o atributo image na requisição
+        if ($request->file('image')) {
+
+            // apagando a imagem cadastrada anteriormente
+            Storage::disk('public')->delete($brand->image);
+
+            // obtendo os dados da nova imagem submetida na requisição
+            $img = $request->file('image');
+
+            // salvando o arquivo da nova imagem na pasta app/storage/app/public/images/brands
+            // e obtendo o seu respectivo nome
+            $img_urn = $img->store('images/brands', 'public');
+
+            // atualizando o atributo do objeto para posterior update
+            $brand->image = $img_urn;
+        }
+
+        // se existir o atributo name na requisição
+        if ($request->name) {
+
+            // atualizando o atributo do objeto para posterior update
+            $brand->name = $request->name;
+        }
+
         // atualiza os dados no BD
-        $brand->update($request->all());
+        $brand->update();
 
         // retornando o objeto atualizado e o status 200
         return response()->json($brand, 200);
@@ -142,6 +169,9 @@ class BrandController extends Controller
 
         // se a consulta não retornar nenhum registro, envia mensagem de erro 404
         if ($brand === null) return response()->json(['msg' => 'Não foi possível realizar a exclusão. Recurso solicitado não existe.'], 404);
+
+        // apagando a imagem cadastrada
+        Storage::disk('public')->delete($brand->image);
 
         // remove os dados no BD
         $brand->delete();

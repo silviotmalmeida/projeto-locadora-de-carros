@@ -30,7 +30,7 @@ class Brand extends Model
     public function rules($id = null)
     {
         return [
-            'name' => 'required|unique:brands,name,' . $id . '|min:3',
+            'name' => 'required|unique:brands,name,' . $id . '|min:3|max:30',
             'image' => 'required|file|mimes:png|min:3|max:100'
         ];
     }

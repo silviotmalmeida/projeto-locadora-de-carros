@@ -79,4 +79,6 @@ Principais comandos do laravel:
 
 - Para criar listar as rotas disponíveis utiliza-se o comando, na pasta raiz do projeto: php artisan route:list
 
+- Para criar um link simbólico entre o storage local e a pasta pública do app utiliza-se o comando, na pasta raiz do projeto: php artisan storage:link
+
 

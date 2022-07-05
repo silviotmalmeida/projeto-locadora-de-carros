@@ -20,7 +20,7 @@ class CreateTypesTable extends Migration
             $table->timestamps();
 
             // colunas personalizadas da tabela
-            $table->string('name', 30);
+            $table->string('name', 30)->unique();
             $table->string('image', 100);
             $table->integer('qtd_doors');
             $table->integer('qtd_seats');
@@ -32,6 +32,9 @@ class CreateTypesTable extends Migration
             $table->unsignedBigInteger('brand_id');
             //// adição da restrição de integridade referencial
             $table->foreign('brand_id')->references('id')->on('brands');
+
+            // coluna para permitir o soft delete
+            $table->softDeletes();
         });
     }
 
