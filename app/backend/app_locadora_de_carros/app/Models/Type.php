@@ -46,12 +46,12 @@ class Type extends Model
     {
         return [
             'name' => 'required|unique:types,name,' . $id . '|min:3|max:30',
-            'image' => 'required|file|mimes:png|min:3|max:100',
+            'image' => 'file|mimes:png|min:3|max:100',
             'qtd_doors' => 'required|integer|digits_between:1,5',
             'qtd_seats' => 'required|integer|digits_between:1,20',
             'air_bag' => 'required|boolean',
             'abs' => 'required|boolean',
-            'brand_id'=> 'required|integer|exists:providers,id',
+            'brand_id'=> 'required|integer|exists:brands,id',
         ];
     }
 

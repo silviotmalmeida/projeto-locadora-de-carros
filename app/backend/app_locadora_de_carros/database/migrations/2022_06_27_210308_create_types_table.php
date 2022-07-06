@@ -21,7 +21,7 @@ class CreateTypesTable extends Migration
 
             // colunas personalizadas da tabela
             $table->string('name', 30)->unique();
-            $table->string('image', 100);
+            $table->string('image', 100)->nullable();
             $table->integer('qtd_doors');
             $table->integer('qtd_seats');
             $table->boolean('air_bag');

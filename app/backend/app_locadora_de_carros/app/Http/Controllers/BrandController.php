@@ -31,7 +31,7 @@ class BrandController extends Controller
     public function index()
     {
         // obtendo os dados do BD
-        $brands = $this->brand->all();
+        $brands = $this->brand->with('types')->get();
 
         // retornando os dados e o status 200
         return response()->json($brands, 200);
@@ -49,18 +49,30 @@ class BrandController extends Controller
         // validando os dados recebidos do formulário
         $request->validate($this->brand->rules(), $this->brand->feedback());
 
-        // obtendo os dados da imagem submetida na requisição
-        $img = $request->file('image');
+        // se existir o atributo image na requisição
+        if ($request->file('image')) {
 
-        // salvando o arquivo de imagem na pasta app/storage/app/public/images/brands
-        // e obtendo o seu respectivo nome
-        $img_urn = $img->store('images/brands', 'public');
+            // obtendo os dados da imagem submetida na requisição
+            $img = $request->file('image');
 
-        // insere os dados no BD
-        $brand = $this->brand->create([
-            'name' => $request->name,
-            'image' => $img_urn
-        ]);
+            // salvando o arquivo de imagem na pasta app/storage/app/public/images/brands
+            // e obtendo o seu respectivo nome
+            $img_urn = $img->store('images/brands', 'public');
+
+            // insere os dados no BD
+            $brand = $this->brand->create([
+                'name' => $request->name,
+                'image' => $img_urn
+            ]);
+        }
+        // senão
+        else {
+
+            // insere os dados no BD
+            $brand = $this->brand->create([
+                'name' => $request->name
+            ]);
+        }
 
         // retornando o objeto criado e o status 201
         return response()->json($brand, 201);
@@ -75,7 +87,7 @@ class BrandController extends Controller
     public function show($id)
     {
         // consultando os dados no BD
-        $brand = $this->brand->find($id);
+        $brand = $this->brand->with('types')->find($id);
 
         // se a consulta não retornar nenhum registro, envia mensagem de erro 404
         if ($brand === null) return response()->json(['msg' => 'Recurso solicitado não existe.'], 404);
@@ -137,20 +149,22 @@ class BrandController extends Controller
             // salvando o arquivo da nova imagem na pasta app/storage/app/public/images/brands
             // e obtendo o seu respectivo nome
             $img_urn = $img->store('images/brands', 'public');
+        }
+        // senão
+        else {
 
-            // atualizando o atributo do objeto para posterior update
-            $brand->image = $img_urn;
+            // preserva a imagem
+            $img_urn = $brand->image;
         }
 
-        // se existir o atributo name na requisição
-        if ($request->name) {
+        // atualizando o objeto com os dados proveninetes da requisição
+        $brand->fill($request->all());
 
-            // atualizando o atributo do objeto para posterior update
-            $brand->name = $request->name;
-        }
+        // ajustando o atributo image
+        $brand->image = $img_urn;
 
         // atualiza os dados no BD
-        $brand->update();
+        $brand->save();
 
         // retornando o objeto atualizado e o status 200
         return response()->json($brand, 200);
@@ -171,7 +185,8 @@ class BrandController extends Controller
         if ($brand === null) return response()->json(['msg' => 'Não foi possível realizar a exclusão. Recurso solicitado não existe.'], 404);
 
         // apagando a imagem cadastrada
-        Storage::disk('public')->delete($brand->image);
+        // como o softdelete está ativo, na exclusão as imagens serão mantidas
+        // Storage::disk('public')->delete($brand->image);
 
         // remove os dados no BD
         $brand->delete();

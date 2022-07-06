@@ -31,7 +31,7 @@ class TypeController extends Controller
     public function index()
     {
         // obtendo os dados do BD
-        $types = $this->type->all();
+        $types = $this->type->with('brand')->get();
 
         // retornando os dados e o status 200
         return response()->json($types, 200);
@@ -48,23 +48,40 @@ class TypeController extends Controller
         // validando os dados recebidos do formulário
         $request->validate($this->type->rules(), $this->type->feedback());
 
-        // obtendo os dados da imagem submetida na requisição
-        $img = $request->file('image');
+        // se existir o atributo image na requisição
+        if ($request->file('image')) {
 
-        // salvando o arquivo de imagem na pasta app/storage/app/public/images/types
-        // e obtendo o seu respectivo nome
-        $img_urn = $img->store('images/types', 'public');
+            // obtendo os dados da imagem submetida na requisição
+            $img = $request->file('image');
 
-        // insere os dados no BD
-        $type = $this->type->create([
-            'name' => $request->name,
-            'image' => $img_urn,
-            'qtd_doors' => $request->qtd_doors,
-            'qtd_seats' => $request->qtd_seats,
-            'air_bag' => $request->air_bag,
-            'abs' => $request->abs,
-            'brand_id' => $request->brand_id
-        ]);
+            // salvando o arquivo de imagem na pasta app/storage/app/public/images/types
+            // e obtendo o seu respectivo nome
+            $img_urn = $img->store('images/types', 'public');
+
+            // insere os dados no BD
+            $type = $this->type->create([
+                'name' => $request->name,
+                'image' => $img_urn,
+                'qtd_doors' => $request->qtd_doors,
+                'qtd_seats' => $request->qtd_seats,
+                'air_bag' => $request->air_bag,
+                'abs' => $request->abs,
+                'brand_id' => $request->brand_id
+            ]);
+        }
+        // senão
+        else {
+
+            // insere os dados no BD
+            $type = $this->type->create([
+                'name' => $request->name,
+                'qtd_doors' => $request->qtd_doors,
+                'qtd_seats' => $request->qtd_seats,
+                'air_bag' => $request->air_bag,
+                'abs' => $request->abs,
+                'brand_id' => $request->brand_id
+            ]);
+        }
 
         // retornando o objeto criado e o status 201
         return response()->json($type, 201);
@@ -79,7 +96,7 @@ class TypeController extends Controller
     public function show($id)
     {
         // consultando os dados no BD
-        $type = $this->type->find($id);
+        $type = $this->type->with('brand')->find($id);
 
         // se a consulta não retornar nenhum registro, envia mensagem de erro 404
         if ($type === null) return response()->json(['msg' => 'Recurso solicitado não existe.'], 404);
@@ -128,7 +145,7 @@ class TypeController extends Controller
             // validando os dados recebidos do formulário
             $request->validate($this->type->rules($id), $this->type->feedback());
         }
-
+        
         // se existir o atributo image na requisição
         if ($request->file('image')) {
 
@@ -141,55 +158,22 @@ class TypeController extends Controller
             // salvando o arquivo da nova imagem na pasta app/storage/app/public/images/types
             // e obtendo o seu respectivo nome
             $img_urn = $img->store('images/types', 'public');
+        }
+        // senão
+        else {
 
-            // atualizando o atributo do objeto para posterior update
-            $type->image = $img_urn;
+            // preserva a imagem
+            $img_urn = $type->image;
         }
 
-        // se existir o atributo name na requisição
-        if ($request->name) {
+        // atualizando o objeto com os dados proveninetes da requisição
+        $type->fill($request->all());
 
-            // atualizando o atributo do objeto para posterior update
-            $type->name = $request->name;
-        }
-
-        // se existir o atributo qtd_doors na requisição
-        if ($request->qtd_doors) {
-
-            // atualizando o atributo do objeto para posterior update
-            $type->qtd_doors = $request->qtd_doors;
-        }
-
-        // se existir o atributo qtd_seats na requisição
-        if ($request->qtd_seats) {
-
-            // atualizando o atributo do objeto para posterior update
-            $type->qtd_seats = $request->qtd_seats;
-        }
-
-        // se existir o atributo air_bag na requisição
-        if ($request->air_bag) {
-
-            // atualizando o atributo do objeto para posterior update
-            $type->air_bag = $request->air_bag;
-        }
-
-        // se existir o atributo abs na requisição
-        if ($request->abs) {
-
-            // atualizando o atributo do objeto para posterior update
-            $type->abs = $request->abs;
-        }
-
-        // se existir o atributo brand_id na requisição
-        if ($request->brand_id) {
-
-            // atualizando o atributo do objeto para posterior update
-            $type->brand_id = $request->brand_id;
-        }
+        // ajustando o atributo image
+        $type->image = $img_urn;
 
         // atualiza os dados no BD
-        $type->update();
+        $type->save();
 
         // retornando o objeto atualizado e o status 200
         return response()->json($type, 200);
@@ -210,7 +194,8 @@ class TypeController extends Controller
         if ($type === null) return response()->json(['msg' => 'Não foi possível realizar a exclusão. Recurso solicitado não existe.'], 404);
 
         // apagando a imagem cadastrada
-        Storage::disk('public')->delete($type->image);
+        // como o softdelete está ativo, na exclusão as imagens serão mantidas
+        // Storage::disk('public')->delete($type->image);
 
         // remove os dados no BD
         $type->delete();

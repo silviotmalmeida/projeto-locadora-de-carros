@@ -24,6 +24,16 @@ class Brand extends Model
         'image'
     ];
 
+    // implementando o relacionamento 1-N com a model type
+    // o hasMany é utilizado na entidade forte, ou seja, a tabela que não contém a chave estrangeira
+    // o primeiro argumento deve ser model da tabela fraca
+    // o segundo argumento deve ser a fk na tabela fraca
+    // o terceiro argumento deve ser a pk na tabela forte
+    public function types()
+    {
+        return $this->hasMany('App\Models\Type', 'brand_id', 'id');
+    }
+
     // definição das validações de cada campo
     // recebe como arqumento o id do registro, se 
     // este argumento será usado na restrição unique em caso de update
@@ -31,7 +41,7 @@ class Brand extends Model
     {
         return [
             'name' => 'required|unique:brands,name,' . $id . '|min:3|max:30',
-            'image' => 'required|file|mimes:png|min:3|max:100'
+            'image' => 'file|mimes:png|min:3|max:100'
         ];
     }
 
