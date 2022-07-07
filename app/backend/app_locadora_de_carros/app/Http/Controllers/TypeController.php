@@ -14,7 +14,7 @@ class TypeController extends Controller
     // foi adicionado o construct para permitir a injeção do model
     /**
      * Create a new controller instance.
-     *
+     * 
      * @return void
      */
     public function __construct(Type $type)
@@ -25,13 +25,78 @@ class TypeController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
+     * Exemplo de consulta:
+     * ...api/type?atr_type=atr1,atr2,...&atr_brand=atr1,atr2,...&filter=atr1:op1:val1;atr2:op2:val2;...
+     * 
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        // obtendo os dados do BD
-        $types = $this->type->with('brand')->get();
+
+        // se existir o atributo atr_brand na requisição
+        if ($request->has('atr_brand') and $request->atr_brand != '') {
+
+            // obtendo os parâmetros
+            // foi incluído o id para permitir o relacionamento
+            $atr_brand = 'brand:id,' . $request->atr_brand;
+
+            // montando a consulta, filtrando os atributos de brand
+            $types = $this->type->with($atr_brand);
+        }
+        // senão
+        else {
+
+            // montando a consulta, com todos os atributos de brand
+            $types = $this->type->with('brand');
+        }
+
+        // se existir o atributo filter na requisição
+        if ($request->has('filter') and $request->filter != '') {
+
+            // obtendo os parâmetros dos filtros
+            $array_filters = explode(';', $request->filter);
+
+            // iterando sobre cada filtro
+            foreach ($array_filters as $filter) {
+
+                // obtendo os parâmetros do filtro
+                $array_filter = explode(':', $filter);
+
+                // se existirem exatamente três parâmetros por filtro
+                if (count($array_filter) == 3) {
+
+                    // obtendo os fatores
+                    $atr = $array_filter[0];
+                    $operator = strtolower($array_filter[1]);
+                    $value = $array_filter[2];
+
+                    // se o operador for válido
+                    if (in_array($operator, ['=', '>', '<', '<>', '>=', '<=', 'like'])) {
+
+                        // montando a consulta, aplicando o filtro
+                        $types = $types->where($atr, $operator, $value);
+                    }
+                }
+            }
+        }
+
+        // se existir o atributo atr_type na requisição
+        if ($request->has('atr_type') and $request->atr_type != '') {
+
+            // obtendo os parâmetros
+            // foi incluído o brand_id para permitir o relacionamento
+            $atr_type = 'id,brand_id,' . $request->atr_type;
+
+            // montando a consulta, filtrando os atributos de type
+            $types = $types->selectRaw($atr_type)->get();
+        }
+        // senão
+        else {
+
+            // montando a consulta, com todos os atributos de type
+            $types = $types->get();
+        }
 
         // retornando os dados e o status 200
         return response()->json($types, 200);
@@ -145,7 +210,7 @@ class TypeController extends Controller
             // validando os dados recebidos do formulário
             $request->validate($this->type->rules($id), $this->type->feedback());
         }
-        
+
         // se existir o atributo image na requisição
         if ($request->file('image')) {
 
