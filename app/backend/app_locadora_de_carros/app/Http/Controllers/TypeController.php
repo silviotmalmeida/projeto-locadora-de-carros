@@ -54,19 +54,19 @@ class TypeController extends Controller
                     implode(',', (new Brand)->getFillable()) . ")"], 404);
             }
 
-            // obtendo os parâmetros
+            // obtendo os parâmetros a partir da requisição
             // foi incluído o id para permitir o relacionamento
             $atr_brand = 'brand:id,' . $request->atr_brand;
-
-            // montando a consulta, filtrando os atributos de brand
-            $types = $this->type->with($atr_brand);
         }
         // senão
         else {
 
-            // montando a consulta, com todos os atributos de brand
-            $types = $this->type->with('brand');
+            // considera todos os atributos pesquisáveis de brand
+            // foi incluído o id para permitir o relacionamento
+            $atr_brand = 'brand:id,' . implode(',', (new Brand)->getFillable());
         }
+        // montando a consulta, filtrando os atributos de brand
+        $types = $this->type->with($atr_brand);
 
         // se existir o atributo filter na requisição
         if ($request->has('filter') and $request->filter != '') {
@@ -130,17 +130,16 @@ class TypeController extends Controller
 
             // obtendo os parâmetros
             // foi incluído o brand_id para permitir o relacionamento
-            $atr_type = 'id,brand_id,' . $request->atr_type;
-
-            // montando a consulta, filtrando os atributos de type
-            $types = $types->selectRaw($atr_type)->get();
+            $atr_type = 'brand_id,' . $request->atr_type;
         }
         // senão
         else {
 
-            // montando a consulta, com todos os atributos de type
-            $types = $types->get();
+            // considera todos os atributos pesquisáveis de type
+            $atr_type = implode(',', (new Type)->getFillable());
         }
+        // montando a consulta, filtrando os atributos de type
+        $types = $types->selectRaw($atr_type)->get();
 
         // retornando os dados e o status 200
         return response()->json($types, 200);

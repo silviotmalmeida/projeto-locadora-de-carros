@@ -18,7 +18,8 @@ class Brand extends Model
     // definindo o nome da tabela no BD
     protected $table = 'brands';
 
-    // definindo os atributos a serem informados
+    // definindo os atributos a serem informados na criação
+    // e pesquisáveis pelos clientes
     protected $fillable = [
         'id',
         'name',

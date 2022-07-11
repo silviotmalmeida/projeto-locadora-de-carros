@@ -18,8 +18,10 @@ class Car extends Model
     // definindo o nome da tabela no BD
     protected $table = 'cars';
 
-    // definindo os atributos a serem informados
+    // definindo os atributos a serem informados na criação
+    // e pesquisáveis pelos clientes
     protected $fillable = [
+        'id',
         'plate',
         'km',
         'available',
@@ -34,5 +36,32 @@ class Car extends Model
     public function type()
     {
         return $this->belongsTo('App\Models\Type', 'type_id', 'id');
+    }
+
+    // definição das validações de cada campo
+    // recebe como arqumento o id do registro, se 
+    // este argumento será usado na restrição unique em caso de update
+    public function rules($id = null)
+    {
+        return [
+            'plate' => 'required|unique:cars,plate,' . $id . '|min:3|max:10',
+            'km' => 'required|integer',
+            'avaiable' => 'required|boolean',
+            'type_id' => 'required|integer|exists:types,id',
+        ];
+    }
+
+    // customização das mensagens de erro
+    public function feedback()
+    {
+        return [
+            'required' => 'O campo :attribute não pode ser vazio!',
+            'plate.unique' => 'A placa já está registrada no sistema',
+            'plate.min' => 'O campo placa não pode ter menos de 3 caracteres!',
+            'plate.max' => 'O campo placa não pode ter mais de 10 caracteres!',
+            'integer' => 'O campo :attribute precisa ser um número inteiro!',
+            'boolean' => 'O campo :attribute precisa ser um valor booleano!',
+            'type_id.exists' => 'Modelo inválido!',
+        ];
     }
 }

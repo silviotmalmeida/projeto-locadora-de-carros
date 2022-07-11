@@ -52,12 +52,9 @@ class BrandController extends Controller
                     implode(',', (new Type)->getFillable()) . ")"], 404);
             }
 
-            // obtendo os parâmetros
+            // obtendo os parâmetros a partir da requisição
             // foi incluído o brand_id para permitir o relacionamento
             $atr_type = 'types:brand_id,' . $request->atr_type;
-
-            // montando a consulta, filtrando os atributos de type
-            $brands = $this->brand->with($atr_type);
         }
         // senão
         else {
@@ -65,10 +62,9 @@ class BrandController extends Controller
             // considera todos os atributos pesquisáveis de type
             // foi incluído o brand_id para permitir o relacionamento
             $atr_type = 'types:brand_id,' . implode(',', (new Type)->getFillable());
-
-            // montando a consulta, com todos os atributos de type
-            $brands = $this->brand->with($atr_type);
         }
+        // montando a consulta, com todos os atributos de type
+        $brands = $this->brand->with($atr_type);
 
         // se existir o atributo filter na requisição
         if ($request->has('filter') and $request->filter != '') {
@@ -131,30 +127,17 @@ class BrandController extends Controller
             }
 
             // obtendo os parâmetros
-            // foi incluído o atributo id
+            // foi incluído o atributo id para permitir o relacionamento
             $atr_brand = 'id,' . $request->atr_brand;
-
-            // montando a consulta, filtrando os atributos de brand
-            $brands = $brands->selectRaw($atr_brand)->get();
         }
         // senão
         else {
 
             // considera todos os atributos pesquisáveis de brand
             $atr_brand = implode(',', (new Brand)->getFillable());
-
-            // montando a consulta, com todos os atributos pesquisáveis de brand
-            $brands = $brands->selectRaw($atr_brand)->get();
         }
-
-
-
-
-
-
-
-        // obtendo os dados do BD
-        // $brands = $this->brand->with('types')->get();
+        // montando a consulta, com todos os atributos pesquisáveis de brand
+        $brands = $brands->selectRaw($atr_brand)->get();
 
         // retornando os dados e o status 200
         return response()->json($brands, 200);

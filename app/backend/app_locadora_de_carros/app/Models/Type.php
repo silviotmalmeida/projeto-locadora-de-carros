@@ -18,7 +18,8 @@ class Type extends Model
     // definindo o nome da tabela no BD
     protected $table = 'types';
 
-    // definindo os atributos a serem informados
+    // definindo os atributos a serem informados na criação
+    // e pesquisáveis pelos clientes
     protected $fillable = [
         'id',
         'name',
@@ -52,7 +53,7 @@ class Type extends Model
             'qtd_seats' => 'required|integer|digits_between:1,20',
             'air_bag' => 'required|boolean',
             'abs' => 'required|boolean',
-            'brand_id'=> 'required|integer|exists:brands,id',
+            'brand_id' => 'required|integer|exists:brands,id',
         ];
     }
 
