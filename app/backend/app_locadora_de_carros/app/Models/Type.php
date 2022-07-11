@@ -20,6 +20,7 @@ class Type extends Model
 
     // definindo os atributos a serem informados
     protected $fillable = [
+        'id',
         'name',
         'image',
         'qtd_doors',

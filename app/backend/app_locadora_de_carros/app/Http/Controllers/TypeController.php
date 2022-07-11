@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Type;
 use Illuminate\Http\Request;
+
+// importando as models
+use App\Models\Type;
+use App\Models\Brand;
+
+// biblioteca customizada para validação das requisições
+use App\Utils\RequestsCustomValidation;
 
 // dependência para gerenciamento do storage
 use Illuminate\Support\Facades\Storage;
@@ -35,7 +41,18 @@ class TypeController extends Controller
     {
 
         // se existir o atributo atr_brand na requisição
-        if ($request->has('atr_brand') and $request->atr_brand != '') {
+        if ($request->has('atr_brand')) {
+
+            // obtendo erros em nomes de atributos, se existirem
+            $bad_attr = RequestsCustomValidation::getErrorOnAttributeName(new Brand, $request->atr_brand);
+
+            // se existir nome de atributo errado
+            if ($bad_attr !== false) {
+
+                // envia mensagem de erro 404
+                return response()->json(['msg' => "Atributo '$bad_attr' não disponível na tabela brands. (Disponíveis: " .
+                    implode(',', (new Brand)->getFillable()) . ")"], 404);
+            }
 
             // obtendo os parâmetros
             // foi incluído o id para permitir o relacionamento
@@ -71,18 +88,45 @@ class TypeController extends Controller
                     $operator = strtolower($array_filter[1]);
                     $value = $array_filter[2];
 
-                    // se o operador for válido
-                    if (in_array($operator, ['=', '>', '<', '<>', '>=', '<=', 'like'])) {
+                    // se o atributo não for disponível
+                    if (!in_array($atr, $this->type->getFillable())) {
 
-                        // montando a consulta, aplicando o filtro
-                        $types = $types->where($atr, $operator, $value);
+                        // envia mensagem de erro 404
+                        return response()->json(['msg' => "Atributo '$atr' não disponível na tabela types. (Disponíveis: " .
+                            implode(',', (new Type)->getFillable()) . ")"], 404);
                     }
+
+                    // se o operador não for válido
+                    if (!in_array($operator, ['=', '>', '<', '<>', '>=', '<=', 'like'])) {
+
+                        // envia mensagem de erro 404
+                        return response()->json(['msg' => "Operador '$operator' incorreto. (Possibilidades: =, >, <, <>, >=, <=, like)"], 404);
+                    }
+
+                    if ($value == '') {
+
+                        // envia mensagem de erro 404
+                        return response()->json(['msg' => "Valor da filtragem não pode ser vazio."], 404);
+                    }
+
+                    // montando a consulta, aplicando o filtro
+                    $types = $types->where($atr, $operator, $value);
                 }
             }
         }
 
         // se existir o atributo atr_type na requisição
-        if ($request->has('atr_type') and $request->atr_type != '') {
+        if ($request->has('atr_type')) {
+
+            // obtendo erros em nomes de atributos, se existirem
+            $bad_attr = RequestsCustomValidation::getErrorOnAttributeName(new Type, $request->atr_type);
+
+            // se existir nome de atributo indisponível ou vazio
+            if ($bad_attr !== false) {
+
+                return response()->json(['msg' => "Atributo '$bad_attr' não disponível na tabela types. (Disponíveis: " .
+                    implode(',', (new Type)->getFillable()) . ")"], 404);
+            }
 
             // obtendo os parâmetros
             // foi incluído o brand_id para permitir o relacionamento

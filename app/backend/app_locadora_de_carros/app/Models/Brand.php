@@ -20,6 +20,7 @@ class Brand extends Model
 
     // definindo os atributos a serem informados
     protected $fillable = [
+        'id',
         'name',
         'image'
     ];

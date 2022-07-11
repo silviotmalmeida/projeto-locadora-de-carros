@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Brand;
 use Illuminate\Http\Request;
+
+// importando as models
+use App\Models\Type;
+use App\Models\Brand;
+
+// biblioteca customizada para validação das requisições
+use App\Utils\RequestsCustomValidation;
 
 // dependência para gerenciamento do storage
 use Illuminate\Support\Facades\Storage;
@@ -25,13 +31,130 @@ class BrandController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
+     * Exemplo de consulta:
+     * ...api/brand?atr_brand=atr1,atr2,...&atr_type=atr1,atr2,...&filter=atr1:op1:val1;atr2:op2:val2;...
+     * 
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        // se existir o atributo atr_type na requisição
+        if ($request->has('atr_type')) {
+
+            // obtendo erros em nomes de atributos, se existirem
+            $bad_attr = RequestsCustomValidation::getErrorOnAttributeName(new Type, $request->atr_type);
+
+            // se existir nome de atributo errado
+            if ($bad_attr !== false) {
+
+                return response()->json(['msg' => "Atributo '$bad_attr' não disponível na tabela types. (Disponíveis: " .
+                    implode(',', (new Type)->getFillable()) . ")"], 404);
+            }
+
+            // obtendo os parâmetros
+            // foi incluído o brand_id para permitir o relacionamento
+            $atr_type = 'types:brand_id,' . $request->atr_type;
+
+            // montando a consulta, filtrando os atributos de type
+            $brands = $this->brand->with($atr_type);
+        }
+        // senão
+        else {
+
+            // considera todos os atributos pesquisáveis de type
+            // foi incluído o brand_id para permitir o relacionamento
+            $atr_type = 'types:brand_id,' . implode(',', (new Type)->getFillable());
+
+            // montando a consulta, com todos os atributos de type
+            $brands = $this->brand->with($atr_type);
+        }
+
+        // se existir o atributo filter na requisição
+        if ($request->has('filter') and $request->filter != '') {
+
+            // obtendo os parâmetros dos filtros
+            $array_filters = explode(';', $request->filter);
+
+            // iterando sobre cada filtro
+            foreach ($array_filters as $filter) {
+
+                // obtendo os parâmetros do filtro
+                $array_filter = explode(':', $filter);
+
+                // se existirem exatamente três parâmetros por filtro
+                if (count($array_filter) == 3) {
+
+                    // obtendo os fatores
+                    $atr = $array_filter[0];
+                    $operator = strtolower($array_filter[1]);
+                    $value = $array_filter[2];
+
+                    // se o atributo não for disponível
+                    if (!in_array($atr, $this->brand->getFillable())) {
+
+                        // envia mensagem de erro 404
+                        return response()->json(['msg' => "Atributo '$atr' não disponível na tabela brands. (Disponíveis: " .
+                            implode(',', (new Brand)->getFillable()) . ")"], 404);
+                    }
+
+                    // se o operador não for válido
+                    if (!in_array($operator, ['=', '>', '<', '<>', '>=', '<=', 'like'])) {
+
+                        // envia mensagem de erro 404
+                        return response()->json(['msg' => "Operador '$operator' incorreto. (Possibilidades: =, >, <, <>, >=, <=, like)"], 404);
+                    }
+
+                    if ($value == '') {
+
+                        // envia mensagem de erro 404
+                        return response()->json(['msg' => "Valor da filtragem não pode ser vazio."], 404);
+                    }
+
+                    // montando a consulta, aplicando o filtro
+                    $brands = $brands->where($atr, $operator, $value);
+                }
+            }
+        }
+
+        // se existir o atributo atr_brand na requisição
+        if ($request->has('atr_brand')) {
+
+            // obtendo erros em nomes de atributos, se existirem
+            $bad_attr = RequestsCustomValidation::getErrorOnAttributeName(new Brand, $request->atr_brand);
+
+            // se existir nome de atributo indisponível ou vazio
+            if ($bad_attr !== false) {
+
+                return response()->json(['msg' => "Atributo '$bad_attr' não disponível na tabela brands. (Disponíveis: " .
+                    implode(',', (new Brand)->getFillable()) . ")"], 404);
+            }
+
+            // obtendo os parâmetros
+            // foi incluído o atributo id
+            $atr_brand = 'id,' . $request->atr_brand;
+
+            // montando a consulta, filtrando os atributos de brand
+            $brands = $brands->selectRaw($atr_brand)->get();
+        }
+        // senão
+        else {
+
+            // considera todos os atributos pesquisáveis de brand
+            $atr_brand = implode(',', (new Brand)->getFillable());
+
+            // montando a consulta, com todos os atributos pesquisáveis de brand
+            $brands = $brands->selectRaw($atr_brand)->get();
+        }
+
+
+
+
+
+
+
         // obtendo os dados do BD
-        $brands = $this->brand->with('types')->get();
+        // $brands = $this->brand->with('types')->get();
 
         // retornando os dados e o status 200
         return response()->json($brands, 200);
