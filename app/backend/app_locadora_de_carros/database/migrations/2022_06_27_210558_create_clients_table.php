@@ -20,7 +20,7 @@ class CreateClientsTable extends Migration
             $table->timestamps();
 
             // colunas personalizadas da tabela
-            $table->string('nome', 30);
+            $table->string('name', 30);
 
             // coluna para permitir o soft delete
             $table->softDeletes();
