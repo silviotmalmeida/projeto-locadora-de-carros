@@ -20,6 +20,7 @@ class Location extends Model
 
     // definindo os atributos a serem informados
     protected $fillable = [
+        'id',
         'initial_date',
         'final_date_estimated',
         'final_date',
@@ -48,5 +49,33 @@ class Location extends Model
     public function car()
     {
         return $this->belongsTo('App\Models\Car', 'car_id', 'id');
+    }
+
+    // definição das validações de cada campo
+    public function rules()
+    {
+        return [
+            'initial_date' => 'required|date',
+            'final_date_estimated' => 'required|date',
+            'final_date' => 'required|date',
+            'daily_value' => 'required|numeric',
+            'initial_km' => 'required|integer',
+            'final_km' => 'required|integer',
+            'client_id' => 'required|integer|exists:clients,id',
+            'car_id' => 'required|integer|exists:cars,id'
+        ];
+    }
+
+    // customização das mensagens de erro
+    public function feedback()
+    {
+        return [
+            'required' => 'O campo :attribute não pode ser vazio!',
+            'date' => 'O campo :attribute precisa ser uma data!',
+            'numeric' => 'O campo :attribute precisa ser um número!',
+            'integer' => 'O campo :attribute precisa ser um número inteiro!',
+            'client_id.exists' => 'Cliente inválido!',
+            'car_id.exists' => 'Carro inválido!'
+        ];
     }
 }

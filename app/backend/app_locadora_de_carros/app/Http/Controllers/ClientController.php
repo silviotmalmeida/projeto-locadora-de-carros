@@ -134,7 +134,7 @@ class ClientController extends Controller
             // considera todos os atributos pesquisáveis de client
             $atr_client = implode(',', (new Client)->getFillable());
         }
-        // montando a consulta, filtrando os atributos de type
+        // montando a consulta, filtrando os atributos de client
         $clients = $clients->selectRaw($atr_client)->get();
 
         // retornando os dados e o status 200
@@ -149,40 +149,105 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // validando os dados recebidos do formulário
+        $request->validate($this->client->rules(), $this->client->feedback());
+
+        // insere os dados no BD
+        $client = $this->client->create([
+            'name' => $request->name
+        ]);
+
+        // retornando o objeto criado e o status 201
+        return response()->json($client, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Client  $client
+     * @param  Integer
      * @return \Illuminate\Http\Response
      */
-    public function show(Client $client)
+    public function show($id)
     {
-        //
+        // consultando os dados no BD
+        $client = $this->client->with('locations')->find($id);
+
+        // se a consulta não retornar nenhum registro, envia mensagem de erro 404
+        if ($client === null) return response()->json(['msg' => 'Recurso solicitado não existe.'], 404);
+
+        // retornando o objeto e o status 200
+        return response()->json($client, 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Client  $client
+     * @param  Integer
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Client $client)
+    public function update(Request $request, $id)
     {
-        //
+        // consultando os dados no BD
+        $client = $this->client->find($id);
+
+        // se a consulta não retornar nenhum registro, envia mensagem de erro 404
+        if ($client === null) return response()->json(['msg' => 'Não foi possível realizar a atualização. Recurso solicitado não existe.'], 404);
+
+        // se a requisição for PATCH, somente alguns atributos serão validados
+        if ($request->method() === 'PATCH') {
+
+            // inicializando o array de validações customizado
+            $validationRules = array();
+
+            // iterando sobre todas as regras definidas no model
+            foreach ($client->rules($id) as $key => $value) {
+
+                // se o atributo da regra estiver presente no request, considera-o
+                if (array_key_exists($key, $request->all())) {
+
+                    $validationRules[$key] = $value;
+                }
+            }
+
+            // validando os dados recebidos do formulário
+            $request->validate($validationRules, $this->client->feedback());
+        }
+        // se for PUT, valida todos os atributos
+        else {
+
+            // validando os dados recebidos do formulário
+            $request->validate($this->client->rules($id), $this->client->feedback());
+        }
+
+        // atualizando o objeto com os dados proveninetes da requisição
+        $client->fill($request->all());
+
+        // atualiza os dados no BD
+        $client->save();
+
+        // retornando o objeto atualizado e o status 200
+        return response()->json($client, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Client  $client
+     * @param  Integer
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Client $client)
+    public function destroy($id)
     {
-        //
+        // consultando os dados no BD
+        $client = $this->client->find($id);
+
+        // se a consulta não retornar nenhum registro, envia mensagem de erro 404
+        if ($client === null) return response()->json(['msg' => 'Não foi possível realizar a exclusão. Recurso solicitado não existe.'], 404);
+
+        // remove os dados no BD
+        $client->delete();
+
+        // retornando mensagem de sucesso e o status 200
+        return response()->json(['msg' => 'Registro excluído com sucesso!'], 200);
     }
 }

@@ -21,7 +21,7 @@ class TypeSeeder extends Seeder
         $brand_range = Brand::max('id');
 
         // laço para criação dos dados
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 50; $i++) {
 
             // sorteando a quantidade de portas
             $qtd_doors = rand(1, 5);

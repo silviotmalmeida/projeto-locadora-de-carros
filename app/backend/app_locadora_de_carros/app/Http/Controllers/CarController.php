@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 // importando as models
 use App\Models\Car;
 use App\Models\Type;
+use App\Models\Location;
 
 // biblioteca customizada para validação das requisições
 use App\Utils\RequestsCustomValidation;
@@ -29,7 +30,7 @@ class CarController extends Controller
     /**
      * Display a listing of the resource.
      * Exemplo de consulta:
-     * ...api/car?atr_car=atr1,atr2,...&atr_type=atr1,atr2,...&filter=atr1:op1:val1;atr2:op2:val2;...
+     * ...api/car?atr_car=atr1,atr2,...&atr_location=atr1,atr2,...&atr_type=atr1,atr2,...&filter=atr1:op1:val1;atr2:op2:val2;...
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -63,6 +64,34 @@ class CarController extends Controller
         }
         // montando a consulta, filtrando os atributos de type
         $cars = $this->car->with($atr_type);
+
+        // se existir o atributo atr_location na requisição
+        if ($request->has('atr_location')) {
+
+            // obtendo erros em nomes de atributos, se existirem
+            $bad_attr = RequestsCustomValidation::getErrorOnAttributeName(new Location, $request->atr_location);
+
+            // se existir nome de atributo errado
+            if ($bad_attr !== false) {
+
+                // envia mensagem de erro 404
+                return response()->json(['msg' => "Atributo '$bad_attr' não disponível na tabela locations. (Disponíveis: " .
+                    implode(',', (new Location)->getFillable()) . ")"], 404);
+            }
+
+            // obtendo os parâmetros a partir da requisição
+            // foi incluído o car_id para permitir o relacionamento
+            $atr_location = 'locations:car_id,' . $request->atr_location;
+        }
+        // senão
+        else {
+
+            // considera todos os atributos pesquisáveis de location
+            // foi incluído o car_id para permitir o relacionamento
+            $atr_location = 'locations:car_id,' . implode(',', (new Location)->getFillable());
+        }
+        // montando a consulta, filtrando os atributos de location
+        $cars = $cars->with($atr_location);
 
         // se existir o atributo filter na requisição
         if ($request->has('filter') and $request->filter != '') {
