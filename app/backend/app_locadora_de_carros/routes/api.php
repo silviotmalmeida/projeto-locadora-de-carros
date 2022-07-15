@@ -22,7 +22,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 
 // definindo as rotas de Brand
-Route::apiResource('brand', 'App\Http\Controllers\BrandController');
+Route::apiResource('brand', 'App\Http\Controllers\BrandController')->middleware('jwt.auth');
 
 // definindo as rotas de Type
 Route::apiResource('type', 'App\Http\Controllers\TypeController');
@@ -35,3 +35,9 @@ Route::apiResource('client', 'App\Http\Controllers\ClientController');
 
 // definindo as rotas de Location
 Route::apiResource('location', 'App\Http\Controllers\LocationController');
+
+// definindo as rotas de autenticação
+Route::post('login', 'App\Http\Controllers\AuthController@login');
+Route::post('logout', 'App\Http\Controllers\AuthController@logout');
+Route::post('refresh', 'App\Http\Controllers\AuthController@refresh');
+Route::post('me', 'App\Http\Controllers\AuthController@me');

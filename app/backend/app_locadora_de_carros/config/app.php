@@ -162,6 +162,9 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
+        // adicionando o jwt-auth
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+
         /*
          * Package Service Providers...
          */

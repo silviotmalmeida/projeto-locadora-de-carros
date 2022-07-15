@@ -37,13 +37,7 @@ Principais comandos do laravel:
 
 - Para criar um projeto laravel utiliza-se o comando: composer create-project --prefer-dist laravel/laravel nome-do-projeto "versão do laravel"
 
-- Para adicionar o laravel ui utiliza-se o comando: composer require laravel/ui:"versão"
-
-- Para adicionar o laravel-excel utiliza-se o comando: composer require maatwebsite/excel="versão"
-
-- Para adicionar o mpdf utiliza-se o comando: composer require mpdf/mpdf="versão"
-
-- Para adicionar o dompdf utiliza-se o comando: composer require barryvdh/laravel-dompdf="versão"
+- Para instalar o JWT-Auth utiliza-se o comando, na pasta raiz do projeto: composer require tymon/jwt-auth "1.0.2". As demais configurações estão descritas na documentação da biblioteca em https://jwt-auth.readthedocs.io/en/develop/laravel-installation/
 
 - Para atualizar o frontend da seção de autenticação web criada pelo ui utiliza-se o comando: npm install && npm run dev
 
