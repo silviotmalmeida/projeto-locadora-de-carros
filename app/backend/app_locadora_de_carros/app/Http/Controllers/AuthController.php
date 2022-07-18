@@ -28,27 +28,36 @@ class AuthController extends Controller
         else {
 
             // envia mensagem de erro 403
-            return response()->json(['msg' => "Email ou Password incorretos"], 403);
+            return response()->json(['msg' => "Email ou Password incorretos!"], 403);
         }
     }
 
+    // ação responsável por expirar o token de autorização
     public function logout()
     {
+        // expirando o token
+        auth('api')->logout();
 
-        return 'logout';
+        // envia mensagem de sucesso
+        return response()->json(['msg' => "Logout realizado com sucesso!"]);
     }
 
-
+    // ação responsável por gerar um novo token de autorização
     public function refresh()
     {
 
-        return 'refresh';
+        // gerando o token atualizado
+        $token = auth('api')->refresh();
+
+        // retornando o token atualizado
+        return response()->json(['token' => $token]);
     }
 
-
+    // ação responsável por obter dados do usuário autenticado
     public function me()
     {
 
-        return 'me';
+        // retornando os dados do usuário autenticado
+        return response()->json(auth()->user());
     }
 }
