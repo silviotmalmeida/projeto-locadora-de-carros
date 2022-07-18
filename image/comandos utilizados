@@ -19,14 +19,14 @@ sudo docker run -it ubuntu:20.04
     mv composer.phar /usr/local/bin/composer
 
 
-    # # instalando o nodejs
-    # wget https://nodejs.org/dist/v16.15.0/node-v16.15.0-linux-x64.tar.xz
+    # instalando o nodejs
+    wget https://nodejs.org/dist/v16.15.0/node-v16.15.0-linux-x64.tar.xz
 
-    # tar -xJvf node-v16.15.0-linux-x64.tar.xz -C /usr/local/lib
+    tar -xJvf node-v16.15.0-linux-x64.tar.xz -C /usr/local/lib
 
-    # echo 'export PATH=$PATH:/usr/local/lib/node-v16.15.0-linux-x64/bin' >> /root/.bashrc
+    echo 'export PATH=$PATH:/usr/local/lib/node-v16.15.0-linux-x64/bin' >> /root/.bashrc
 
-    # . ~/.bashrc
+    . ~/.bashrc
 
 
     # # instalando o mailhog

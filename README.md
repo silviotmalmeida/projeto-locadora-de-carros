@@ -39,9 +39,11 @@ Principais comandos do laravel:
 
 - Para instalar o JWT-Auth utiliza-se o comando, na pasta raiz do projeto: composer require tymon/jwt-auth "1.0.2". As demais configurações estão descritas na documentação da biblioteca em https://jwt-auth.readthedocs.io/en/develop/laravel-installation/
 
-- Para atualizar o frontend da seção de autenticação web criada pelo ui utiliza-se o comando: npm install && npm run dev
+- Para adicionar o laravel ui utiliza-se o comando, na pasta raiz do projeto: composer require laravel/ui:"versão"
 
 - Para utilizar o laravel ui com autenticação web habilitada utiliza-se o comando: php artisan ui "bootstrap ou vue ou react" --auth
+
+- Para atualizar o frontend da seção de autenticação web criada pelo ui utiliza-se o comando: npm install && npm run dev
 
 - Para criar um controller utiliza-se o comando, na pasta raiz do projeto: php artisan make:controller nome-do-controller-Controller
 
