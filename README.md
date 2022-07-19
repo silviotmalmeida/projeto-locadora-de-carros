@@ -10,7 +10,11 @@ O projeto encontra-se dockerizado para facilitar a implantação. As orientaçõ
 
 - Para iniciar o container utiliza-se o comando "sudo ./startContainers.sh";
 
-- Para instalar as dependências do projeto utiliza-se o comando "sudo ./runComposerInstall.sh";
+- Para instalar as dependências do projeto utiliza-se o comando "sudo ./openTerminal.sh" e "npm install";
+
+- Para compilar os arquivos do frontend do projeto utiliza-se o comando "sudo ./openTerminal.sh" e "npm run dev";
+
+- Para compilar em tempo-real os arquivos do frontend do projeto utiliza-se o comando "sudo ./openTerminal.sh" e "npm run watch";
 
 - Para aplicar as migrations utiliza-se o comando "sudo ./runMigrate.sh";
 

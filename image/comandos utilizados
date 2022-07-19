@@ -46,7 +46,7 @@ sudo docker run -it ubuntu:20.04
 
     # cp /root/gocode/bin/mhsendmail /usr/local/bin/mhsendmail
     
-    # exit
+    exit
 
 sudo docker commit (id do container obtido em sudo docker ps -a) locadora-de-carros-laravel
 
