@@ -10,28 +10,34 @@
                     <div class="card-body">
 
                         <!-- criando o formulário -->
-                        <!-- foi incluido o @submit.prevent para interceptar o evento padrão de submit, incluindo o comportamento do método login() -->
+                        <!-- foi incluido o @submit.prevent para interceptar o evento padrão de submit, substituindo-o pelo comportamento do método login() -->
                         <form method="POST" action="" @submit.prevent="login($event)">
 
                             <!-- inserindo o csrf_token -->
                             <!-- o atributo :value insere no atributo value da tag o valor da variável referenciada -->
                             <input type="hidden" name="_token" :value="csrf_token">
 
+                            <!-- inserindo o campo de e-mail -->
                             <div class="row mb-3">
                                 <label for="email" class="col-md-4 col-form-label text-md-end">E-mail</label>
 
+                                <!-- foi incluído o recurso de two-way-data-binding
+                                com o uso do atributo v-model vinculado à variável email -->
                                 <div class="col-md-6">
                                     <input id="email" type="email" class="form-control" name="email" value="" required
-                                        autocomplete="email" autofocus>
+                                        autocomplete="email" autofocus v-model="email">
                                 </div>
                             </div>
 
+                            <!-- inserindo o campo de senha -->
                             <div class="row mb-3">
                                 <label for="password" class="col-md-4 col-form-label text-md-end">Senha</label>
 
+                                <!-- foi incluído o recurso de two-way-data-binding
+                                com o uso do atributo v-model vinculado à variável password -->
                                 <div class="col-md-6">
                                     <input id="password" type="password" class="form-control" name="password" required
-                                        autocomplete="current-password">
+                                        autocomplete="current-password" v-model="password">
                                 </div>
                             </div>
 
@@ -73,9 +79,9 @@ export default {
     // função que retorna o estado inicial das variáveis do componente
     data: function () {
         return {
-            
+
+            // inicializando as variáveis
             email: '',
-            
             password: '',
         };
     },
@@ -83,19 +89,43 @@ export default {
     // comportamentos do componente
     methods: {
 
-        // método para obter o token de autorização da api e simultaneamente logar no admin web
-        login($e) {
+        // método para obter o token de autorização da api e simultaneamente logar na sessão do admin web
+        login(e) {
 
+            // definindo a url de login na api
             let url = 'http://0.0.0.0:8080/api/login';
+
+            // definindo as configurações da requisição
             let configuration = {
+
+                // definindo o método
                 method: 'post',
-                body: {
-                    'email': '',
-                    'password': ''
-                }
+
+                // definindo o body
+                body: new URLSearchParams({
+                    'email': this.email,
+                    'password': this.password
+                })
             }
-            fetch(url, configuration);
-            console.log('teste');
+
+            // executando a requisição
+            fetch(url, configuration)
+                // convertendo a resposta para json
+                .then(response => response.json())
+                // obtendo os dados da resposta
+                .then(data => {
+                    
+                    // se o token for recebido com sucesso
+                    if(data.token){
+
+                        // cria um cookie da sessão para permitir as requisições com autenticação
+                        document.cookie = 'token=' + data.token + ';SameSite=Lax';
+                    }  
+                    
+                    // executa o comportamento original do evento submit
+                    // autenticando a sessão no admin web
+                    e.target.submit();
+                });
         }
     }
 }
