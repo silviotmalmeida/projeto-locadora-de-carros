@@ -104,6 +104,22 @@
             </div>
         </nav>
 
+        {{-- incluindo o breadcrumb --}}
+        {{-- conteúdo visível somente a usuários logados --}}
+        @auth
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    {{-- inserindo o link para o home --}}
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+
+                    {{-- inserindo o nome da rota ativa --}}
+                    <li class="breadcrumb-item active" aria-current="page">{{ ucfirst(Route::currentRouteName()) }}</li>
+                </ol>
+            </nav>
+
+        @endauth
+
         <main class="py-4">
             @yield('content')
         </main>

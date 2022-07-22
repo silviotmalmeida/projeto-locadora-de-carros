@@ -5,10 +5,10 @@
     <div class="row justify-content-center">
       <div class="col-md-8">
         <!-- card de busca -->
-        <div class="card mb-3">
-          <div class="card-header">Busca de Marcas</div>
-          <!-- inserindo o formulário de busca -->
-          <div class="card-body">
+        <card-component title="Busca de Marcas">
+          <!-- inserindo o content -->
+          <template v-slot:content>
+            <!-- inserindo o formulário de busca -->
             <div class="row">
               <div class="col mb-3">
                 <!-- incluindo o componente de input para o ID-->
@@ -32,8 +32,6 @@
                 <input-container-component
                   label="Nome"
                   inputId="inputNAME"
-                  inputType="text"
-                  inputPlaceholder="Nome"
                   helpID="helpNAME"
                   helpText="Opcional. Informe o nome da marca."
                 >
@@ -47,55 +45,165 @@
                 </input-container-component>
               </div>
             </div>
-          </div>
+          </template>
 
-          <!-- inserindo o botão de pesquisar -->
-          <div class="card-footer">
+          <!-- inserindo o footer -->
+          <template v-slot:footer>
+            <!-- inserindo o botão de pesquisar -->
             <button type="submit" class="btn btn-primary float-end">
               Pesquisar
             </button>
-          </div>
-        </div>
+          </template>
+        </card-component>
 
         <!-- card de listagem -->
-        <div class="card">
-          <div class="card-header">Listagem de Marcas</div>
-          <!-- inserindo os resultados da busca -->
-          <div class="card-body">
-
+        <card-component title="Listagem de Marcas">
+          <!-- inserindo o content -->
+          <template v-slot:content>
+            <!-- inserindo a tabela com os resultados da busca-->
             <table-component></table-component>
+          </template>
 
-          </div>
-
-          <!-- inserindo o botão de adicionar -->
-          <div class="card-footer">
-            <button type="submit" class="btn btn-primary float-end">
-              Adicionar Novo
+          <!-- inserindo o footer -->
+          <template v-slot:footer>
+            <!-- inserindo o botão de adicionar -->
+            <button
+              type="submit"
+              class="btn btn-primary float-end"
+              data-bs-toggle="modal"
+              data-bs-target="#brandModal"
+            >
+              Adicionar Nova Marca
             </button>
-          </div>
-        </div>
+          </template>
+        </card-component>
       </div>
     </div>
+
+    <modal-component id="brandModal" title="Adicionar Nova Marca">
+      <!-- inserindo o content -->
+      <template v-slot:content>
+        <!-- incluindo o componente de input para o Nome-->
+        <div class="form-group">
+          <input-container-component
+            label="Nome"
+            inputId="inputNewNAME"
+            helpID="helpNewNAME"
+            helpText="Obrigatório. Informe o nome da marca."
+          >
+            <!-- foi utilizado o v-model (two-way-databinding) para a variável brandName -->
+            <input
+              type="text"
+              class="form-control"
+              id="inputNewNAME"
+              placeholder="Nome"
+              aria-describedby="helpNewNAME"
+              v-model="brandName"
+            />
+          </input-container-component>
+
+          {{ brandName }}
+        </div>
+
+        <!-- espaçamento entre os inputs -->
+        <div class="mb-3"></div>
+
+        <!-- incluindo o componente de input para a Imagem-->
+        <div class="form-group">
+          <input-container-component
+            label="Imagem"
+            inputId="inputNewIMAGE"
+            helpID="helpNewIMAGE"
+            helpText="Opcional. Adicione a imagem da marca (formato .png)."
+          >
+            <!-- como não é possivel utilizar o v-model em inputs de tipo text,
+            utilizamos o @change para capturarmos o evento onChange do input
+            e dispararmos o método getImage() -->
+            <input
+              type="file"
+              class="form-control"
+              id="inputNewIMAGE"
+              placeholder="Imagem"
+              aria-describedby="helpNewIMAGE"
+              @change="getImage($event)"
+            />
+          </input-container-component>
+
+          {{ brandImage }}
+        </div>
+      </template>
+
+      <!-- inserindo o footer -->
+      <template v-slot:footer>
+        <!-- inserindo o botão de fechar -->
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Fechar
+        </button>
+
+        <!-- inserindo o botão de salvar -->
+        <button type="button" class="btn btn-primary" @click="save()">
+          Salvar
+        </button>
+      </template>
+    </modal-component>
   </div>
 </template>
 
 <script>
-import InputContainerComponent from "./InputContainerComponent.vue";
 export default {
-  components: { InputContainerComponent },
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
-  props: [""],
+  props: [],
 
   // função que retorna o estado inicial das variáveis do componente
   data: function () {
     return {
       // inicializando as variáveis
+      brandName: "",
+      brandImage: [],
     };
   },
 
   // comportamentos do componente
-  methods: {},
+  methods: {
+    // método responsável por popular a variável brandImage
+    getImage(e) {
+      // popula a variável através do evento recebido
+      this.brandImage = e.target.files;
+    },
+    // método responsável salvar no BD
+    save() {
+      console.log(this.brandName, this.brandImage);
+
+      // definindo a url da api
+      let url = "http://0.0.0.0:8080/api/v1/brand";
+
+      // definindo as configurações da requisição
+      let config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Accept: "application/json",
+        },
+      };
+
+      // definindo os dados a serem inseridos no BD
+      let formData = new FormData();
+      formData.append("name", this.brandName);
+      formData.append("image", this.brandImage[0]);
+
+      // executando a requisição post
+      axios
+        .post(url, formData, config)
+        // imprimindo a resposta
+        .then((response) => {
+          console.log(response);
+        })
+        // em caso de erros, imprime
+        .catch((errors) => {
+          console.log(errors);
+        });
+    },
+  },
 };
 </script>
 

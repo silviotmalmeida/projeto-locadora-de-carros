@@ -5,11 +5,11 @@
     <!-- renderizando a label -->
     <label :for="inputId" class="form-label">{{ label }}</label>
 
-    <!-- adicionando o conteúdo da tag do componente, no caso o input -->
+    <!-- conteúdo a ser inserido no corpo da tag, no caso o input -->
     <slot></slot>
 
     <!-- renderizando o texto de ajuda -->
-    <div :id="idHelp" class="form-text">{{ helpText }}</div>
+    <div :id="helpID" class="form-text">{{ helpText }}</div>
   </div>
 </template>
 
