@@ -27,6 +27,9 @@
         <!-- inserindo o corpo do modal -->
         <div class="modal-body">
           <!-- conteúdo a ser inserido no corpo da tag, através de um template v-slot -->
+          <slot name="alert"></slot>
+
+          <!-- conteúdo a ser inserido no corpo da tag, através de um template v-slot -->
           <slot name="content"></slot>
         </div>
 
