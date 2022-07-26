@@ -5298,12 +5298,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _AlertComponent_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AlertComponent.vue */ "./resources/js/components/AlertComponent.vue");
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  components: {
-    AlertComponent: _AlertComponent_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
-  },
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
   props: [],
@@ -5311,14 +5318,31 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       // inicializando as variáveis
+      baseUrl: "http://0.0.0.0:8080/api/v1/brand",
       brandName: "",
       brandImage: [],
       request_status: "",
-      request_errors_messages: []
+      request_messages: [],
+      brands: []
     };
   },
   // comportamentos do componente
   methods: {
+    getBrands: function getBrands() {
+      var _this = this;
+
+      // definindo as configurações da requisição
+      // executando a requisição get
+      axios.get(this.baseUrl) // se houve sucesso na requisição
+      .then(function (response) {
+        // popula o array de marcas
+        _this.brands = response.data;
+        console.log(_this.brands);
+      }) // em caso de erros, imprime
+      ["catch"](function (errors) {
+        console.log(errors.response);
+      });
+    },
     // método responsável por popular a variável brandImage
     getImage: function getImage(e) {
       // popula a variável através do evento recebido
@@ -5326,39 +5350,62 @@ __webpack_require__.r(__webpack_exports__);
     },
     // método responsável salvar no BD
     save: function save() {
-      var _this = this;
+      var _this2 = this;
 
-      // definindo a url da api
-      var url = "http://0.0.0.0:8080/api/v1/brand"; // definindo as configurações da requisição
-
+      // definindo as configurações da requisição
       var config = {
         headers: {
           "Content-Type": "multipart/form-data",
-          "Accept": "application/json"
+          Accept: "application/json"
         }
       }; // definindo os dados a serem inseridos no BD
 
-      var formData = new FormData();
-      formData.append("name", this.brandName);
-      formData.append("image", this.brandImage[0]);
-      console.log(url, config, formData); // executando a requisição post
+      var formData = new FormData(); // adiciona o nome na requisição
+
+      formData.append("name", this.brandName); // se alguma imagem for selecionada
+
+      if (this.brandImage[0]) {
+        // adiciona a imagem na requisição
+        formData.append("image", this.brandImage[0]);
+      }
+
+      console.log(this.baseUrl, config, formData); // executando a requisição post
 
       axios.post(url, formData, config) // se houve sucesso na requisição
       .then(function (response) {
-        console.log('sucesso'); // atribui status de sucesso para exibir o alert
+        // atribui status de sucesso para exibir o alert
+        _this2.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
 
-        _this.request_status = "success";
+        _this2.request_messages.push("ID do novo registro: " + response.data.id);
+
         console.log(response);
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
-        console.log('erro'); // atribui status de error para exibir o alert
+        // atribui status de error para exibir o alert
+        _this2.request_status = "error"; // atribui as mensagens de erro para serem utilizadas no alert
+        // adicionando a mensagem geral
 
-        _this.request_status = "error"; // atribui as mensagens de erro para serem utilizadas no alert
+        _this2.request_messages.push(errors.response.data.message); // adicionando as demais mensagens
+        // converte o objeto em array
 
-        _this.request_errors_messages = errors.response;
+
+        Object.entries(errors.response.data.errors) // executa um foreach pelo array
+        .forEach(function (entrie) {
+          // popula o array de mensagens que será passado para o alert
+          var _entrie = _slicedToArray(entrie, 2),
+              key = _entrie[0],
+              value = _entrie[1];
+
+          _this2.request_messages.push(value[0]);
+        });
         console.log(errors.response);
       });
     }
+  },
+  // comportamentos automáticos após a montagem do componente
+  mounted: function mounted() {
+    // carrega a lista de marcas cadastradas
+    this.getBrands();
   }
 });
 
@@ -5595,7 +5642,11 @@ var render = function render() {
     attrs: {
       role: "alert"
     }
-  }, [_vm._v("\n  " + _vm._s(_vm.text) + "\n  "), _c("hr")]);
+  }, [_vm._v("\n  " + _vm._s(_vm.text) + "\n\n  "), _vm._v(" "), _vm.details ? _c("span", [_c("hr"), _vm._v(" "), _c("ul", _vm._l(_vm.details, function (value, key) {
+    return _c("li", {
+      key: key
+    }, [_vm._v(_vm._s(value))]);
+  }), 0)]) : _vm._e()]);
 };
 
 var staticRenderFns = [];
@@ -5719,13 +5770,14 @@ var render = function render() {
         return [_vm.request_status == "success" ? _c("alert-component", {
           attrs: {
             type: "success",
-            text: "Cadastro realizado com sucesso!"
+            text: "Cadastro realizado com sucesso!",
+            details: _vm.request_messages
           }
         }) : _vm._e(), _vm._v(" "), _vm.request_status == "error" ? _c("alert-component", {
           attrs: {
             type: "danger",
             text: "Erro durante cadastro:",
-            details: _vm.request_errors_messages
+            details: _vm.request_messages
           }
         }) : _vm._e()];
       },

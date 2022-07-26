@@ -1,10 +1,21 @@
 <template>
   <!-- trecho de código que representa o html do componente -->
 
+  <!-- desenhando o alert do tipo correspondente -->
   <div :class="style" role="alert">
+    <!-- imprimindo a mensagem -->
     {{ text }}
-    <hr />
-    <!-- {{ details.data.message }} -->
+
+    <!-- se foram enviados detalhes de erro -->
+    <span v-if="details">
+      <!-- desenha linha horizontal -->
+      <hr />
+
+      <!-- imprimie lista de erros -->
+      <ul>
+        <li v-for="(value, key) in details" :key="key">{{ value }}</li>
+      </ul>
+    </span>
   </div>
 </template>
 

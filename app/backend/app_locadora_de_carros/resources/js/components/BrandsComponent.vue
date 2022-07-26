@@ -81,6 +81,7 @@
       </div>
     </div>
 
+    <!-- modal de cadastro -->
     <modal-component id="brandModal" title="Adicionar Nova Marca">
       <!-- inserindo o alert -->
       <template v-slot:alert>
@@ -88,6 +89,7 @@
         <alert-component
           type="success"
           text="Cadastro realizado com sucesso!"
+          :details="request_messages"
           v-if="request_status == 'success'"
         ></alert-component>
 
@@ -95,7 +97,7 @@
         <alert-component
           type="danger"
           text="Erro durante cadastro:"
-          :details="request_errors_messages"
+          :details="request_messages"
           v-if="request_status == 'error'"
         ></alert-component>
       </template>
@@ -169,9 +171,7 @@
 </template>
 
 <script>
-import AlertComponent from "./AlertComponent.vue";
 export default {
-  components: { AlertComponent },
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
   props: [],
@@ -180,15 +180,35 @@ export default {
   data: function () {
     return {
       // inicializando as variáveis
+      baseUrl: "http://0.0.0.0:8080/api/v1/brand",
       brandName: "",
       brandImage: [],
       request_status: "",
-      request_errors_messages: [],
+      request_messages: [],
+      brands: [],
     };
   },
 
   // comportamentos do componente
   methods: {
+    getBrands() {
+      // definindo as configurações da requisição
+
+      // executando a requisição get
+      axios
+        .get(this.baseUrl)
+        // se houve sucesso na requisição
+        .then((response) => {
+          // popula o array de marcas
+          this.brands = response.data;
+          console.log(this.brands);
+        })
+        // em caso de erros, imprime
+        .catch((errors) => {
+          console.log(errors.response);
+        });
+    },
+
     // método responsável por popular a variável brandImage
     getImage(e) {
       // popula a variável através do evento recebido
@@ -196,50 +216,66 @@ export default {
     },
     // método responsável salvar no BD
     save() {
-      
-      // definindo a url da api
-      let url = "http://0.0.0.0:8080/api/v1/brand";
-
       // definindo as configurações da requisição
       let config = {
         headers: {
           "Content-Type": "multipart/form-data",
-          "Accept": "application/json",
+          Accept: "application/json",
         },
       };
 
       // definindo os dados a serem inseridos no BD
       let formData = new FormData();
+      // adiciona o nome na requisição
       formData.append("name", this.brandName);
-      formData.append("image", this.brandImage[0]);
+      // se alguma imagem for selecionada
+      if (this.brandImage[0]) {
+        // adiciona a imagem na requisição
+        formData.append("image", this.brandImage[0]);
+      }
 
-      console.log(url, config, formData)
+      console.log(this.baseUrl, config, formData);
 
       // executando a requisição post
       axios
         .post(url, formData, config)
         // se houve sucesso na requisição
         .then((response) => {
-
-          console.log('sucesso');
           // atribui status de sucesso para exibir o alert
           this.request_status = "success";
 
+          // atribui as mensagens de sucesso para serem utilizadas no alert
+          this.request_messages.push(
+            "ID do novo registro: " + response.data.id
+          );
           console.log(response);
         })
         // em caso de erros, imprime
         .catch((errors) => {
-
-          console.log('erro');
           // atribui status de error para exibir o alert
           this.request_status = "error";
 
           // atribui as mensagens de erro para serem utilizadas no alert
-          this.request_errors_messages = errors.response;
+          // adicionando a mensagem geral
+          this.request_messages.push(errors.response.data.message);
 
+          // adicionando as demais mensagens
+          // converte o objeto em array
+          Object.entries(errors.response.data.errors)
+            // executa um foreach pelo array
+            .forEach((entrie) => {
+              // popula o array de mensagens que será passado para o alert
+              const [key, value] = entrie;
+              this.request_messages.push(value[0]);
+            });
           console.log(errors.response);
         });
     },
+  },
+  // comportamentos automáticos após a montagem do componente
+  mounted() {
+    // carrega a lista de marcas cadastradas
+    this.getBrands();
   },
 };
 </script>
