@@ -1,42 +1,41 @@
 <template>
   <!-- trecho de código que representa o html do componente -->
 
-  <table class="table table-hover">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">First</th>
-        <th scope="col">Last</th>
-        <th scope="col">Handle</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">1</th>
-        <td>Mark</td>
-        <td>Otto</td>
-        <td>@mdo</td>
-      </tr>
-      <tr>
-        <th scope="row">2</th>
-        <td>Jacob</td>
-        <td>Thornton</td>
-        <td>@fat</td>
-      </tr>
-      <tr>
-        <th scope="row">3</th>
-        <td colspan="2">Larry the Bird</td>
-        <td>@twitter</td>
-      </tr>
-    </tbody>
-  </table>
+  <div>
+    <!-- desenhando a tabela -->
+    <table class="table table-hover">
+      <!-- desenhando o cabeçalho -->
+      <thead>
+        <tr>
+          <!-- iterando o array de atributos a serem considerados -->
+          <th v-for="(item, index) in attributes" :key="index" scope="col">
+            {{ item.title }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- iterando o array de dados para imprimir os registros -->
+        <tr v-for="(item, index) in data" :key="index">
+          <!-- iterando sobre os registros -->
+          <td v-for="(value, key) in item" :key="key + randomKey()">
+            <!-- se o tipo do atributo for image, renderiza uma tag img com a imagem -->
+            <template v-if="attributes[key].type === 'image'"
+              ><img :src="'/storage/' + value" width="30" height="30"
+            /></template>
+            <!-- se o tipo do atributo for text, imprime o texto -->
+            <template v-else-if="attributes[key].type === 'text'">{{ value }}</template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script>
 export default {
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
-  props: [],
+  props: ["data", "attributes"],
 
   // função que retorna o estado inicial das variáveis do componente
   data: function () {
@@ -45,8 +44,31 @@ export default {
     };
   },
 
+  // propriedades computadas do componente
+  computed: {
+    cleanData() {
+      let attributesKeys = Object.keys(this.attributes);
+
+      this.data.map((item, index) => {
+        let cleanItem = {};
+
+        attributesKeys.forEach((att) => {
+          cleanItem[att] = item[att];
+        });
+
+        console.log(cleanItem);
+      });
+    },
+  },
+
   // comportamentos do componente
-  methods: {},
+  methods: {
+    randomKey() {
+      return (
+        new Date().getTime() + Math.floor(Math.random() * 10000).toString()
+      );
+    },
+  },
 };
 </script>
 

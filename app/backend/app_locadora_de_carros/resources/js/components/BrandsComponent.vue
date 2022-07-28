@@ -62,7 +62,10 @@
           <!-- inserindo o content -->
           <template v-slot:content>
             <!-- inserindo a tabela com os resultados da busca-->
-            <table-component></table-component>
+            <table-component
+              :data="cleanData"
+              :attributes="brandsAttributes"
+            ></table-component>
           </template>
 
           <!-- inserindo o footer -->
@@ -78,6 +81,8 @@
             </button>
           </template>
         </card-component>
+
+        {{ cleanData }}
       </div>
     </div>
 
@@ -185,23 +190,95 @@ export default {
       brandImage: [],
       request_status: "",
       request_messages: [],
-      brands: [],
+      brandsData: [],
+      brandsAttributes: {
+        id: { title: "ID", type: "text" },
+        name: { title: "Nome", type: "text" },
+        image: { title: "Imagem", type: "image" },
+      },
     };
+  },
+
+  // propriedades computadas do componente
+  computed: {
+    // token de autorização
+    token() {
+      // obtendo o token através dos cookies para anexá-lo explicitamento no
+      // header das requisições
+      let token = document.cookie
+        // removendo os espaços
+        .replace(/\s/g, "")
+        // separando os cookies
+        .split(";")
+        // encontrando o token de autorização
+        .find((key) => {
+          return key.startsWith("token=");
+        });
+      // obtendo o corpo do token
+      token = token.split("=")[1];
+      // incluindo o prefixo 'Bearer ' ao token
+      token = "Bearer " + token;
+
+      return token;
+    },
+
+    // url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
+    listTableUrl() {
+      // obtendo a lista de atributos separada por vírgulas
+      let atr_brand = Object.keys(this.brandsAttributes).reduce(
+        (p, n) => p + "," + n
+      );
+
+      // incrementando a url base com os parâmetros de filtro
+      let listTableUrl = this.baseUrl + "?atr_brand=" + atr_brand;
+
+      return listTableUrl;
+    },
+
+    // dados limpos para envio ao componente table
+    cleanData() {
+      // inicializando o array de saída
+      let cleanData = [];
+      // obtendo os atributos desejados a partir da brandsAttributes
+      let attributesKeys = Object.keys(this.brandsAttributes);
+      // iterando sobre o array original da resposta da requisição
+      this.brandsData.map((item, index) => {
+        // inicializando o registro vazio
+        let cleanItem = {};
+        // iterando sobre o array de atributos desejados
+        attributesKeys.forEach((att) => {
+          // populando o registro
+          cleanItem[att] = item[att];
+        });
+        // populando o array de saída
+        cleanData.push(cleanItem);
+      });
+
+      return cleanData;
+    },
   },
 
   // comportamentos do componente
   methods: {
+    // método que obtém a lista de marcas cadastradas
     getBrands() {
       // definindo as configurações da requisição
+      let config = {
+        headers: {
+          Accept: "application/json",
+          Authorization: this.token,
+        },
+      };
 
       // executando a requisição get
       axios
-        .get(this.baseUrl)
+        .get(this.listTableUrl, config)
         // se houve sucesso na requisição
         .then((response) => {
           // popula o array de marcas
-          this.brands = response.data;
-          console.log(this.brands);
+          this.brandsData = response.data;
+
+          console.log(this.brandsData);
         })
         // em caso de erros, imprime
         .catch((errors) => {
@@ -221,6 +298,7 @@ export default {
         headers: {
           "Content-Type": "multipart/form-data",
           Accept: "application/json",
+          Authorization: this.token,
         },
       };
 
@@ -238,7 +316,7 @@ export default {
 
       // executando a requisição post
       axios
-        .post(url, formData, config)
+        .post(this.baseUrl, formData, config)
         // se houve sucesso na requisição
         .then((response) => {
           // atribui status de sucesso para exibir o alert
@@ -263,9 +341,9 @@ export default {
           // converte o objeto em array
           Object.entries(errors.response.data.errors)
             // executa um foreach pelo array
-            .forEach((entrie) => {
+            .forEach((entry) => {
               // popula o array de mensagens que será passado para o alert
-              const [key, value] = entrie;
+              const [key, value] = entry;
               this.request_messages.push(value[0]);
             });
           console.log(errors.response);

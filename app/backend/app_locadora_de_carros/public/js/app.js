@@ -5323,21 +5323,91 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       brandImage: [],
       request_status: "",
       request_messages: [],
-      brands: []
+      brandsData: [],
+      brandsAttributes: {
+        id: {
+          title: "ID",
+          type: "text"
+        },
+        name: {
+          title: "Nome",
+          type: "text"
+        },
+        image: {
+          title: "Imagem",
+          type: "image"
+        }
+      }
     };
+  },
+  // propriedades computadas do componente
+  computed: {
+    // token de autorização
+    token: function token() {
+      // obtendo o token através dos cookies para anexá-lo explicitamento no
+      // header das requisições
+      var token = document.cookie // removendo os espaços
+      .replace(/\s/g, "") // separando os cookies
+      .split(";") // encontrando o token de autorização
+      .find(function (key) {
+        return key.startsWith("token=");
+      }); // obtendo o corpo do token
+
+      token = token.split("=")[1]; // incluindo o prefixo 'Bearer ' ao token
+
+      token = "Bearer " + token;
+      return token;
+    },
+    // url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
+    listTableUrl: function listTableUrl() {
+      // obtendo a lista de atributos separada por vírgulas
+      var atr_brand = Object.keys(this.brandsAttributes).reduce(function (p, n) {
+        return p + "," + n;
+      }); // incrementando a url base com os parâmetros de filtro
+
+      var listTableUrl = this.baseUrl + "?atr_brand=" + atr_brand;
+      return listTableUrl;
+    },
+    // dados limpos para envio ao componente table
+    cleanData: function cleanData() {
+      // inicializando o array de saída
+      var cleanData = []; // obtendo os atributos desejados a partir da brandsAttributes
+
+      var attributesKeys = Object.keys(this.brandsAttributes); // iterando sobre o array original da resposta da requisição
+
+      this.brandsData.map(function (item, index) {
+        // inicializando o registro vazio
+        var cleanItem = {}; // iterando sobre o array de atributos desejados
+
+        attributesKeys.forEach(function (att) {
+          // populando o registro
+          cleanItem[att] = item[att];
+        }); // populando o array de saída
+
+        cleanData.push(cleanItem);
+      });
+      return cleanData;
+    }
   },
   // comportamentos do componente
   methods: {
+    // método que obtém a lista de marcas cadastradas
     getBrands: function getBrands() {
       var _this = this;
 
       // definindo as configurações da requisição
-      // executando a requisição get
-      axios.get(this.baseUrl) // se houve sucesso na requisição
+      var config = {
+        headers: {
+          Accept: "application/json",
+          Authorization: this.token
+        }
+      }; // executando a requisição get
+
+      axios.get(this.listTableUrl, config) // se houve sucesso na requisição
       .then(function (response) {
         // popula o array de marcas
-        _this.brands = response.data;
-        console.log(_this.brands);
+        _this.brandsData = response.data;
+        console.log(_this.brandsData);
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         console.log(errors.response);
@@ -5356,7 +5426,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       var config = {
         headers: {
           "Content-Type": "multipart/form-data",
-          Accept: "application/json"
+          Accept: "application/json",
+          Authorization: this.token
         }
       }; // definindo os dados a serem inseridos no BD
 
@@ -5371,7 +5442,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
       console.log(this.baseUrl, config, formData); // executando a requisição post
 
-      axios.post(url, formData, config) // se houve sucesso na requisição
+      axios.post(this.baseUrl, formData, config) // se houve sucesso na requisição
       .then(function (response) {
         // atribui status de sucesso para exibir o alert
         _this2.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
@@ -5390,11 +5461,11 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
         Object.entries(errors.response.data.errors) // executa um foreach pelo array
-        .forEach(function (entrie) {
+        .forEach(function (entry) {
           // popula o array de mensagens que será passado para o alert
-          var _entrie = _slicedToArray(entrie, 2),
-              key = _entrie[0],
-              value = _entrie[1];
+          var _entry = _slicedToArray(entry, 2),
+              key = _entry[0],
+              value = _entry[1];
 
           _this2.request_messages.push(value[0]);
         });
@@ -5609,14 +5680,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
-  props: [],
+  props: ["data", "attributes"],
   // função que retorna o estado inicial das variáveis do componente
   data: function data() {
     return {// inicializando as variáveis
     };
   },
+  // propriedades computadas do componente
+  computed: {
+    cleanData: function cleanData() {
+      var attributesKeys = Object.keys(this.attributes);
+      this.data.map(function (item, index) {
+        var cleanItem = {};
+        attributesKeys.forEach(function (att) {
+          cleanItem[att] = item[att];
+        });
+        console.log(cleanItem);
+      });
+    }
+  },
   // comportamentos do componente
-  methods: {}
+  methods: {
+    randomKey: function randomKey() {
+      return new Date().getTime() + Math.floor(Math.random() * 10000).toString();
+    }
+  }
 });
 
 /***/ }),
@@ -5742,7 +5830,12 @@ var render = function render() {
     scopedSlots: _vm._u([{
       key: "content",
       fn: function fn() {
-        return [_c("table-component")];
+        return [_c("table-component", {
+          attrs: {
+            data: _vm.cleanData,
+            attributes: _vm.brandsAttributes
+          }
+        })];
       },
       proxy: true
     }, {
@@ -5759,7 +5852,7 @@ var render = function render() {
       },
       proxy: true
     }])
-  })], 1)]), _vm._v(" "), _c("modal-component", {
+  }), _vm._v("\n\n      " + _vm._s(_vm.cleanData) + "\n    ")], 1)]), _vm._v(" "), _c("modal-component", {
     attrs: {
       id: "brandModal",
       title: "Adicionar Nova Marca"
@@ -6262,49 +6355,33 @@ var render = function render() {
   var _vm = this,
       _c = _vm._self._c;
 
-  return _vm._m(0);
+  return _c("div", [_c("table", {
+    staticClass: "table table-hover"
+  }, [_c("thead", [_c("tr", _vm._l(_vm.attributes, function (item, index) {
+    return _c("th", {
+      key: index,
+      attrs: {
+        scope: "col"
+      }
+    }, [_vm._v("\n          " + _vm._s(item.title) + "\n        ")]);
+  }), 0)]), _vm._v(" "), _c("tbody", _vm._l(_vm.data, function (item, index) {
+    return _c("tr", {
+      key: index
+    }, _vm._l(item, function (value, key) {
+      return _c("td", {
+        key: key + _vm.randomKey()
+      }, [_vm.attributes[key].type === "image" ? [_c("img", {
+        attrs: {
+          src: "/storage/" + value,
+          width: "30",
+          height: "30"
+        }
+      })] : _vm.attributes[key].type === "text" ? [_vm._v(_vm._s(value))] : _vm._e()], 2);
+    }), 0);
+  }), 0)])]);
 };
 
-var staticRenderFns = [function () {
-  var _vm = this,
-      _c = _vm._self._c;
-
-  return _c("table", {
-    staticClass: "table table-hover"
-  }, [_c("thead", [_c("tr", [_c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("#")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("First")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("Last")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("Handle")])])]), _vm._v(" "), _c("tbody", [_c("tr", [_c("th", {
-    attrs: {
-      scope: "row"
-    }
-  }, [_vm._v("1")]), _vm._v(" "), _c("td", [_vm._v("Mark")]), _vm._v(" "), _c("td", [_vm._v("Otto")]), _vm._v(" "), _c("td", [_vm._v("@mdo")])]), _vm._v(" "), _c("tr", [_c("th", {
-    attrs: {
-      scope: "row"
-    }
-  }, [_vm._v("2")]), _vm._v(" "), _c("td", [_vm._v("Jacob")]), _vm._v(" "), _c("td", [_vm._v("Thornton")]), _vm._v(" "), _c("td", [_vm._v("@fat")])]), _vm._v(" "), _c("tr", [_c("th", {
-    attrs: {
-      scope: "row"
-    }
-  }, [_vm._v("3")]), _vm._v(" "), _c("td", {
-    attrs: {
-      colspan: "2"
-    }
-  }, [_vm._v("Larry the Bird")]), _vm._v(" "), _c("td", [_vm._v("@twitter")])])])]);
-}];
+var staticRenderFns = [];
 render._withStripped = true;
 
 
