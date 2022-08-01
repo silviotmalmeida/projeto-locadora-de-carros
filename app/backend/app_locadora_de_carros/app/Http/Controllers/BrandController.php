@@ -32,7 +32,7 @@ class BrandController extends Controller
     /**
      * Display a listing of the resource.
      * Exemplo de consulta:
-     * ...api/brand?atr_brand=atr1,atr2,...&atr_type=atr1,atr2,...&filter=atr1:op1:val1;atr2:op2:val2;...
+     * ...api/brand?atr_brand=atr1,atr2,...&atr_type=atr1,atr2,...&filter=atr1:op1:val1;atr2:op2:val2;&paginate=1...
      * 
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -113,6 +113,18 @@ class BrandController extends Controller
             }
         }
 
+        // se existir o atributo paginate na requisição e o mesmo for inteiro
+        if ($request->has('paginate')) {
+
+            // define a paginação
+            $itemsPerPage = $request->paginate;
+        } else {
+
+            // define a paginação em zero, ou seja, define o valor de 15
+            $itemsPerPage = 15;
+        }
+
+
         // se existir o atributo atr_brand na requisição
         if ($request->has('atr_brand')) {
 
@@ -137,7 +149,7 @@ class BrandController extends Controller
             $atr_brand = implode(',', (new Brand)->getFillable());
         }
         // montando a consulta, com todos os atributos pesquisáveis de brand
-        $brands = $brands->selectRaw($atr_brand)->get();
+        $brands = $brands->selectRaw($atr_brand)->paginate($itemsPerPage);
 
         // retornando os dados e o status 200
         return response()->json($brands, 200);

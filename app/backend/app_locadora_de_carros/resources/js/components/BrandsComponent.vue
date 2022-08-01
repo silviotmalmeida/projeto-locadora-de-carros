@@ -196,6 +196,8 @@ export default {
         name: { title: "Nome", type: "text" },
         image: { title: "Imagem", type: "image" },
       },
+      brandsPerPage: 5,
+      cleanData: [],
     };
   },
 
@@ -223,38 +225,22 @@ export default {
     },
 
     // url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
-    listTableUrl() {
+    // bem como na definição da paginação
+    customizedGetUrl() {
       // obtendo a lista de atributos separada por vírgulas
       let atr_brand = Object.keys(this.brandsAttributes).reduce(
         (p, n) => p + "," + n
       );
 
       // incrementando a url base com os parâmetros de filtro
-      let listTableUrl = this.baseUrl + "?atr_brand=" + atr_brand;
+      let customizedGetUrl =
+        this.baseUrl +
+        "?atr_brand=" +
+        atr_brand +
+        "&paginate=" +
+        this.brandsPerPage;
 
-      return listTableUrl;
-    },
-
-    // dados limpos para envio ao componente table
-    cleanData() {
-      // inicializando o array de saída
-      let cleanData = [];
-      // obtendo os atributos desejados a partir da brandsAttributes
-      let attributesKeys = Object.keys(this.brandsAttributes);
-      // iterando sobre o array original da resposta da requisição
-      this.brandsData.map((item, index) => {
-        // inicializando o registro vazio
-        let cleanItem = {};
-        // iterando sobre o array de atributos desejados
-        attributesKeys.forEach((att) => {
-          // populando o registro
-          cleanItem[att] = item[att];
-        });
-        // populando o array de saída
-        cleanData.push(cleanItem);
-      });
-
-      return cleanData;
+      return customizedGetUrl;
     },
   },
 
@@ -272,18 +258,43 @@ export default {
 
       // executando a requisição get
       axios
-        .get(this.listTableUrl, config)
+        .get(this.customizedGetUrl, config)
         // se houve sucesso na requisição
         .then((response) => {
           // popula o array de marcas
           this.brandsData = response.data;
 
+          this.cleanData = this.clearData();
+
           console.log(this.brandsData);
+          console.log(this.cleanData);
         })
         // em caso de erros, imprime
         .catch((errors) => {
           console.log(errors.response);
         });
+    },
+
+    // limpa os dados para envio ao componente table
+    clearData() {
+      // inicializando o array de saída
+      let cleanData = [];
+      // obtendo os atributos desejados a partir da brandsAttributes
+      let attributesKeys = Object.keys(this.brandsAttributes);
+      // iterando sobre o array original da resposta da requisição
+      this.brandsData.data.map((item, index) => {
+        // inicializando o registro vazio
+        let cleanItem = {};
+        // iterando sobre o array de atributos desejados
+        attributesKeys.forEach((att) => {
+          // populando o registro
+          cleanItem[att] = item[att];
+        });
+        // populando o array de saída
+        cleanData.push(cleanItem);
+      });
+
+      return cleanData;
     },
 
     // método responsável por popular a variável brandImage

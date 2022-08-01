@@ -5337,7 +5337,9 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
           title: "Imagem",
           type: "image"
         }
-      }
+      },
+      brandsPerPage: 5,
+      cleanData: []
     };
   },
   // propriedades computadas do componente
@@ -5359,34 +5361,15 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       return token;
     },
     // url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
-    listTableUrl: function listTableUrl() {
+    // bem como na definição da paginação
+    customizedGetUrl: function customizedGetUrl() {
       // obtendo a lista de atributos separada por vírgulas
       var atr_brand = Object.keys(this.brandsAttributes).reduce(function (p, n) {
         return p + "," + n;
       }); // incrementando a url base com os parâmetros de filtro
 
-      var listTableUrl = this.baseUrl + "?atr_brand=" + atr_brand;
-      return listTableUrl;
-    },
-    // dados limpos para envio ao componente table
-    cleanData: function cleanData() {
-      // inicializando o array de saída
-      var cleanData = []; // obtendo os atributos desejados a partir da brandsAttributes
-
-      var attributesKeys = Object.keys(this.brandsAttributes); // iterando sobre o array original da resposta da requisição
-
-      this.brandsData.map(function (item, index) {
-        // inicializando o registro vazio
-        var cleanItem = {}; // iterando sobre o array de atributos desejados
-
-        attributesKeys.forEach(function (att) {
-          // populando o registro
-          cleanItem[att] = item[att];
-        }); // populando o array de saída
-
-        cleanData.push(cleanItem);
-      });
-      return cleanData;
+      var customizedGetUrl = this.baseUrl + "?atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
+      return customizedGetUrl;
     }
   },
   // comportamentos do componente
@@ -5403,15 +5386,37 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         }
       }; // executando a requisição get
 
-      axios.get(this.listTableUrl, config) // se houve sucesso na requisição
+      axios.get(this.customizedGetUrl, config) // se houve sucesso na requisição
       .then(function (response) {
         // popula o array de marcas
         _this.brandsData = response.data;
+        _this.cleanData = _this.clearData();
         console.log(_this.brandsData);
+        console.log(_this.cleanData);
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         console.log(errors.response);
       });
+    },
+    // limpa os dados para envio ao componente table
+    clearData: function clearData() {
+      // inicializando o array de saída
+      var cleanData = []; // obtendo os atributos desejados a partir da brandsAttributes
+
+      var attributesKeys = Object.keys(this.brandsAttributes); // iterando sobre o array original da resposta da requisição
+
+      this.brandsData.data.map(function (item, index) {
+        // inicializando o registro vazio
+        var cleanItem = {}; // iterando sobre o array de atributos desejados
+
+        attributesKeys.forEach(function (att) {
+          // populando o registro
+          cleanItem[att] = item[att];
+        }); // populando o array de saída
+
+        cleanData.push(cleanItem);
+      });
+      return cleanData;
     },
     // método responsável por popular a variável brandImage
     getImage: function getImage(e) {
