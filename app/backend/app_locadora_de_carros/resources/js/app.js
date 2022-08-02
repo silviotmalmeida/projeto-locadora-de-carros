@@ -4,9 +4,9 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require('./bootstrap');
+require("./bootstrap");
 
-window.Vue = require('vue').default;
+window.Vue = require("vue").default;
 
 /**
  * The following block of code may be used to automatically register your
@@ -19,15 +19,46 @@ window.Vue = require('vue').default;
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
-Vue.component('example-component', require('./components/ExampleComponent.vue').default);
-Vue.component('login-component', require('./components/LoginComponent.vue').default);
-Vue.component('home-component', require('./components/HomeComponent.vue').default);
-Vue.component('brands-component', require('./components/BrandsComponent.vue').default);
-Vue.component('input-container-component', require('./components/InputContainerComponent.vue').default);
-Vue.component('table-component', require('./components/TableComponent.vue').default);
-Vue.component('card-component', require('./components/CardComponent.vue').default);
-Vue.component('modal-component', require('./components/ModalComponent.vue').default);
-Vue.component('alert-component', require('./components/AlertComponent.vue').default);
+Vue.component(
+    "example-component",
+    require("./components/ExampleComponent.vue").default
+);
+Vue.component(
+    "login-component",
+    require("./components/LoginComponent.vue").default
+);
+Vue.component(
+    "home-component",
+    require("./components/HomeComponent.vue").default
+);
+Vue.component(
+    "brands-component",
+    require("./components/BrandsComponent.vue").default
+);
+Vue.component(
+    "input-container-component",
+    require("./components/InputContainerComponent.vue").default
+);
+Vue.component(
+    "table-component",
+    require("./components/TableComponent.vue").default
+);
+Vue.component(
+    "card-component",
+    require("./components/CardComponent.vue").default
+);
+Vue.component(
+    "modal-component",
+    require("./components/ModalComponent.vue").default
+);
+Vue.component(
+    "alert-component",
+    require("./components/AlertComponent.vue").default
+);
+Vue.component(
+    "pagination-component",
+    require("./components/PaginationComponent.vue").default
+);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -36,5 +67,5 @@ Vue.component('alert-component', require('./components/AlertComponent.vue').defa
  */
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
 });

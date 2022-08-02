@@ -113,18 +113,6 @@ class BrandController extends Controller
             }
         }
 
-        // se existir o atributo paginate na requisição e o mesmo for inteiro
-        if ($request->has('paginate')) {
-
-            // define a paginação
-            $itemsPerPage = $request->paginate;
-        } else {
-
-            // define a paginação em zero, ou seja, define o valor de 15
-            $itemsPerPage = 15;
-        }
-
-
         // se existir o atributo atr_brand na requisição
         if ($request->has('atr_brand')) {
 
@@ -148,8 +136,21 @@ class BrandController extends Controller
             // considera todos os atributos pesquisáveis de brand
             $atr_brand = implode(',', (new Brand)->getFillable());
         }
-        // montando a consulta, com todos os atributos pesquisáveis de brand
-        $brands = $brands->selectRaw($atr_brand)->paginate($itemsPerPage);
+
+        // se existir o atributo paginate na requisição
+        if ($request->has('paginate')) {
+
+            // define a paginação
+            $itemsPerPage = $request->paginate;
+
+            // montando a consulta, com todos os atributos pesquisáveis de brand e a paginação
+            $brands = $brands->selectRaw($atr_brand)->paginate($itemsPerPage);
+        } else {
+
+            // montando a consulta, com todos os atributos pesquisáveis de brand
+            $brands = $brands->selectRaw($atr_brand)->get();
+        }
+
 
         // retornando os dados e o status 200
         return response()->json($brands, 200);

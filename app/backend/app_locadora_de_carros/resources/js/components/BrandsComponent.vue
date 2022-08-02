@@ -24,6 +24,7 @@
                     id="inputId"
                     placeholder="ID"
                     aria-describedby="helpID"
+                    v-model="searchData.id"
                   />
                 </input-container-component>
               </div>
@@ -42,6 +43,7 @@
                     id="inputNAME"
                     placeholder="Nome"
                     aria-describedby="helpNAME"
+                    v-model="searchData.name"
                   />
                 </input-container-component>
               </div>
@@ -51,7 +53,11 @@
           <!-- inserindo o footer -->
           <template v-slot:footer>
             <!-- inserindo o botão de pesquisar -->
-            <button type="submit" class="btn btn-primary float-end">
+            <button
+              type="submit"
+              class="btn btn-primary float-end"
+              @click="search()"
+            >
               Pesquisar
             </button>
           </template>
@@ -70,6 +76,28 @@
 
           <!-- inserindo o footer -->
           <template v-slot:footer>
+            <!-- inserindo a paginação -->
+            <pagination-component>
+              <!-- iterando sobre os links retornados na requisição com paginação -->
+              <template v-for="(value, key) in brandsData.links">
+                <!-- se o link for diferente null, não renderiza o item -->
+                <!-- se o active for true, adiciona a classe active -->
+                <li
+                  v-if="value.url != null"
+                  :key="key"
+                  :class="value.active ? 'page-item active' : 'page-item'"
+                  @click="paginate(value)"
+                >
+                  <!-- inserindo o link -->
+                  <!-- o texto dos botões será traduzido pela função translatePagination() -->
+                  <a
+                    class="page-link"
+                    v-html="translatePagination(value.label)"
+                  ></a>
+                </li>
+              </template>
+            </pagination-component>
+
             <!-- inserindo o botão de adicionar -->
             <button
               type="submit"
@@ -176,7 +204,9 @@
 </template>
 
 <script>
+import PaginationComponent from "./PaginationComponent.vue";
 export default {
+  components: { PaginationComponent },
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
   props: [],
@@ -191,13 +221,14 @@ export default {
       request_status: "",
       request_messages: [],
       brandsData: [],
+      cleanData: [],
       brandsAttributes: {
         id: { title: "ID", type: "text" },
         name: { title: "Nome", type: "text" },
         image: { title: "Imagem", type: "image" },
       },
       brandsPerPage: 5,
-      cleanData: [],
+      searchData: { id: "", name: "" },
     };
   },
 
@@ -223,56 +254,43 @@ export default {
 
       return token;
     },
+  },
 
-    // url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
+  // comportamentos do componente
+  methods: {
+    // método que gera a url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
     // bem como na definição da paginação
-    customizedGetUrl() {
+    customizeListUrl() {
       // obtendo a lista de atributos separada por vírgulas
       let atr_brand = Object.keys(this.brandsAttributes).reduce(
         (p, n) => p + "," + n
       );
 
-      // incrementando a url base com os parâmetros de filtro
-      let customizedGetUrl =
-        this.baseUrl +
-        "?atr_brand=" +
-        atr_brand +
-        "&paginate=" +
-        this.brandsPerPage;
+      let customListUrl = "";
 
-      return customizedGetUrl;
-    },
-  },
+      // se na baseUrl já existir a ?, refere-se a url com o atributo page incluído
+      // logo os próximos atributos deverão ser separados por &
+      if (this.baseUrl.includes("?")) {
+        // incrementando a url base com os parâmetros de filtro
+        customListUrl =
+          this.baseUrl +
+          "&atr_brand=" +
+          atr_brand +
+          "&paginate=" +
+          this.brandsPerPage;
+      }
+      // senão, o primeiro atributo será separado por ?
+      else {
+        // incrementando a url base com os parâmetros de filtro
+        customListUrl =
+          this.baseUrl +
+          "?atr_brand=" +
+          atr_brand +
+          "&paginate=" +
+          this.brandsPerPage;
+      }
 
-  // comportamentos do componente
-  methods: {
-    // método que obtém a lista de marcas cadastradas
-    getBrands() {
-      // definindo as configurações da requisição
-      let config = {
-        headers: {
-          Accept: "application/json",
-          Authorization: this.token,
-        },
-      };
-
-      // executando a requisição get
-      axios
-        .get(this.customizedGetUrl, config)
-        // se houve sucesso na requisição
-        .then((response) => {
-          // popula o array de marcas
-          this.brandsData = response.data;
-
-          this.cleanData = this.clearData();
-
-          console.log(this.brandsData);
-          console.log(this.cleanData);
-        })
-        // em caso de erros, imprime
-        .catch((errors) => {
-          console.log(errors.response);
-        });
+      return customListUrl;
     },
 
     // limpa os dados para envio ao componente table
@@ -295,6 +313,77 @@ export default {
       });
 
       return cleanData;
+    },
+
+    // método que obtém a lista de marcas cadastradas
+    getBrands() {
+      // definindo as configurações da requisição
+      let config = {
+        headers: {
+          Accept: "application/json",
+          Authorization: this.token,
+        },
+      };
+
+      // obtendo a url customizada para a listagem
+      let customListUrl = this.customizeListUrl();
+
+      // executando a requisição get
+      axios
+        .get(customListUrl, config)
+        // se houve sucesso na requisição
+        .then((response) => {
+          // popula o array de marcas completo
+          this.brandsData = response.data;
+
+          // popula o array de marcas limpo para envio ao componente table
+          this.cleanData = this.clearData();
+
+          console.log(this.brandsData);
+          console.log(this.cleanData);
+        })
+        // em caso de erros, imprime
+        .catch((errors) => {
+          console.log(errors.response);
+        });
+    },
+
+    // método que realiza a paginação
+    paginate(v) {
+      // atualiza a base url com a página clicada
+      this.baseUrl = v.url;
+
+      // realiza a busca na nova url
+      this.getBrands();
+    },
+
+    // método que realiza a busca
+    search() {
+      let filter = '';
+
+      for (let key in this.searchData) {
+        if (this.searchData[key]) {
+          filter += key + ":like:" + this.searchData[key] + ";";
+        }
+      }
+
+      console.log(filter);
+    },
+
+    // método que traduz os botçoes de paginação
+    translatePagination(text) {
+      // se o texto for Previous
+      if (text.includes("Previous"))
+        // traduz o texto
+        return text.replace("Previous", "Anterior");
+
+      // se o texto for Next
+      if (text.includes("Next"))
+        // traduz o texto
+        return text.replace("Next", "Próxima");
+
+      // para os demais casos não traduz
+      return text;
     },
 
     // método responsável por popular a variável brandImage

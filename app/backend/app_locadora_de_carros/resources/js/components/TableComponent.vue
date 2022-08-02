@@ -23,7 +23,9 @@
               ><img :src="'/storage/' + value" width="30" height="30"
             /></template>
             <!-- se o tipo do atributo for text, imprime o texto -->
-            <template v-else-if="attributes[key].type === 'text'">{{ value }}</template>
+            <template v-else-if="attributes[key].type === 'text'">{{
+              value
+            }}</template>
           </td>
         </tr>
       </tbody>
@@ -45,21 +47,7 @@ export default {
   },
 
   // propriedades computadas do componente
-  computed: {
-    cleanData() {
-      let attributesKeys = Object.keys(this.attributes);
-
-      this.data.map((item, index) => {
-        let cleanItem = {};
-
-        attributesKeys.forEach((att) => {
-          cleanItem[att] = item[att];
-        });
-
-        console.log(cleanItem);
-      });
-    },
-  },
+  computed: {},
 
   // comportamentos do componente
   methods: {
