@@ -11,6 +11,8 @@
           <th v-for="(item, index) in attributes" :key="index" scope="col">
             {{ item.title }}
           </th>
+          <!-- a coluna de botões só será desenhada caso algum botão exista -->
+          <th v-if="btn_read || btn_update || btn_delete"></th>
         </tr>
       </thead>
       <tbody>
@@ -27,6 +29,21 @@
               value
             }}</template>
           </td>
+          <!-- a coluna de botões só será desenhada caso algum botão exista -->
+          <td v-if="btn_read || btn_update || btn_delete">
+            <!-- botão de read -->
+            <button v-if="btn_read" class="btn btn-outline-primary btn-sm">
+              Visualizar
+            </button>
+            <!-- botão de update -->
+            <button v-if="btn_update" class="btn btn-outline-secondary btn-sm">
+              Editar
+            </button>
+            <!-- botão de delete -->
+            <button v-if="btn_delete" class="btn btn-outline-danger btn-sm">
+              Remover
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -37,7 +54,7 @@
 export default {
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
-  props: ["data", "attributes"],
+  props: ["data", "attributes", "btn_read", "btn_update", "btn_delete"],
 
   // função que retorna o estado inicial das variáveis do componente
   data: function () {

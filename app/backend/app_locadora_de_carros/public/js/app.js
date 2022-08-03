@@ -5324,6 +5324,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     return {
       // inicializando as variáveis
       baseUrl: "http://0.0.0.0:8080/api/v1/brand",
+      paginationUrl: "",
       brandName: "",
       brandImage: [],
       request_status: "",
@@ -5345,6 +5346,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         }
       },
       brandsPerPage: 5,
+      searchId: "",
+      searchName: "",
       searchData: {
         id: "",
         name: ""
@@ -5378,19 +5381,32 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // obtendo a lista de atributos separada por vírgulas
       var atr_brand = Object.keys(this.brandsAttributes).reduce(function (p, n) {
         return p + "," + n;
-      });
-      var customListUrl = ""; // se na baseUrl já existir a ?, refere-se a url com o atributo page incluído
+      }); // inicializando a url customizada
+      // se a url de paginação estiver definida, utiliza a mesma
+      // senão utiliza a url base
+
+      var customListUrl = this.paginationUrl ? this.paginationUrl : this.baseUrl; // se na url já existir a ?, refere-se a url com o atributo page incluído
       // logo os próximos atributos deverão ser separados por &
+      // senão inclui a ?
 
-      if (this.baseUrl.includes("?")) {
-        // incrementando a url base com os parâmetros de filtro
-        customListUrl = this.baseUrl + "&atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
-      } // senão, o primeiro atributo será separado por ?
-      else {
-        // incrementando a url base com os parâmetros de filtro
-        customListUrl = this.baseUrl + "?atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
-      }
+      customListUrl.includes("?") ? customListUrl += "&" : customListUrl += "?"; // incrementando a url base com os parâmetros de filtro e quantidades de item por página
 
+      customListUrl += "atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage; // inicializando a variável com os filtros vazia
+
+      var filter = ""; // iterando sobre o array de filtros
+
+      for (var key in this.searchData) {
+        // se o filtro foi preenchido
+        if (this.searchData[key]) {
+          // se não for o primeiro filtro, insere o separador ;
+          if (filter) filter += ";"; // considera o filtro conforme formatação key:like:%value%
+
+          filter += key + ":like:%" + this.searchData[key] + "%";
+        }
+      } // se existirem filtros, incrementa a url
+
+
+      if (filter) customListUrl += "&filter=" + filter;
       return customListUrl;
     },
     // limpa os dados para envio ao componente table
@@ -5425,7 +5441,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         }
       }; // obtendo a url customizada para a listagem
 
-      var customListUrl = this.customizeListUrl(); // executando a requisição get
+      var customListUrl = this.customizeListUrl();
+      console.log(customListUrl); // executando a requisição get
 
       axios.get(customListUrl, config) // se houve sucesso na requisição
       .then(function (response) {
@@ -5442,24 +5459,22 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     },
     // método que realiza a paginação
     paginate: function paginate(v) {
-      // atualiza a base url com a página clicada
-      this.baseUrl = v.url; // realiza a busca na nova url
+      // atualiza a pagination url com a página clicada
+      this.paginationUrl = v.url; // realiza a busca
 
       this.getBrands();
     },
     // método que realiza a busca
     search: function search() {
-      var filter = '';
+      // atualizando os filtros
+      this.searchData.id = this.searchId;
+      this.searchData.name = this.searchName; // removendo o atributo de pagina
 
-      for (var key in this.searchData) {
-        if (this.searchData[key]) {
-          filter += key + ":like:" + this.searchData[key] + ";";
-        }
-      }
+      this.paginationUrl = ""; // realiza a busca
 
-      console.log(filter);
+      this.getBrands();
     },
-    // método que traduz os botçoes de paginação
+    // método que traduz os botões de paginação
     translatePagination: function translatePagination(text) {
       // se o texto for Previous
       if (text.includes("Previous")) // traduz o texto
@@ -5765,7 +5780,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
-  props: ["data", "attributes"],
+  props: ["data", "attributes", "btn_read", "btn_update", "btn_delete"],
   // função que retorna o estado inicial das variáveis do componente
   data: function data() {
     return {// inicializando as variáveis
@@ -5861,8 +5876,8 @@ var render = function render() {
           directives: [{
             name: "model",
             rawName: "v-model",
-            value: _vm.searchData.id,
-            expression: "searchData.id"
+            value: _vm.searchId,
+            expression: "searchId"
           }],
           staticClass: "form-control",
           attrs: {
@@ -5872,16 +5887,17 @@ var render = function render() {
             "aria-describedby": "helpID"
           },
           domProps: {
-            value: _vm.searchData.id
+            value: _vm.searchId
           },
           on: {
             input: function input($event) {
               if ($event.target.composing) return;
-
-              _vm.$set(_vm.searchData, "id", $event.target.value);
+              _vm.searchId = $event.target.value;
             }
           }
-        })])], 1), _vm._v(" "), _c("div", {
+        })]), _vm._v(" "), _vm.searchData.id ? _c("span", {
+          staticClass: "form-text"
+        }, [_vm._v("Aplicado: " + _vm._s(_vm.searchData.id))]) : _vm._e()], 1), _vm._v(" "), _c("div", {
           staticClass: "col mb-3"
         }, [_c("input-container-component", {
           attrs: {
@@ -5894,8 +5910,8 @@ var render = function render() {
           directives: [{
             name: "model",
             rawName: "v-model",
-            value: _vm.searchData.name,
-            expression: "searchData.name"
+            value: _vm.searchName,
+            expression: "searchName"
           }],
           staticClass: "form-control",
           attrs: {
@@ -5905,16 +5921,17 @@ var render = function render() {
             "aria-describedby": "helpNAME"
           },
           domProps: {
-            value: _vm.searchData.name
+            value: _vm.searchName
           },
           on: {
             input: function input($event) {
               if ($event.target.composing) return;
-
-              _vm.$set(_vm.searchData, "name", $event.target.value);
+              _vm.searchName = $event.target.value;
             }
           }
-        })])], 1)])];
+        })]), _vm._v(" "), _vm.searchData.name ? _c("span", {
+          staticClass: "form-text"
+        }, [_vm._v("Aplicado: " + _vm._s(_vm.searchData.name))]) : _vm._e()], 1)])];
       },
       proxy: true
     }, {
@@ -5944,7 +5961,10 @@ var render = function render() {
         return [_c("table-component", {
           attrs: {
             data: _vm.cleanData,
-            attributes: _vm.brandsAttributes
+            attributes: _vm.brandsAttributes,
+            btn_read: false,
+            btn_update: false,
+            btn_delete: false
           }
         })];
       },
@@ -5978,7 +5998,7 @@ var render = function render() {
       },
       proxy: true
     }])
-  }), _vm._v("\n\n      " + _vm._s(_vm.cleanData) + "\n    ")], 1)]), _vm._v(" "), _c("modal-component", {
+  })], 1)]), _vm._v(" "), _c("modal-component", {
     attrs: {
       id: "brandModal",
       title: "Adicionar Nova Marca"
@@ -6036,7 +6056,7 @@ var render = function render() {
               _vm.brandName = $event.target.value;
             }
           }
-        })])], 1), _vm._v("\n\n      " + _vm._s(_vm.brandName) + "\n\n      "), _vm._v(" "), _c("div", {
+        })])], 1), _vm._v(" "), _c("div", {
           staticClass: "mb-3"
         }), _vm._v(" "), _c("div", {
           staticClass: "form-group"
@@ -6060,7 +6080,7 @@ var render = function render() {
               return _vm.getImage($event);
             }
           }
-        })])], 1), _vm._v("\n\n      " + _vm._s(_vm.brandImage) + "\n    ")];
+        })])], 1)];
       },
       proxy: true
     }, {
@@ -6517,17 +6537,17 @@ var render = function render() {
 
   return _c("div", [_c("table", {
     staticClass: "table table-hover"
-  }, [_c("thead", [_c("tr", _vm._l(_vm.attributes, function (item, index) {
+  }, [_c("thead", [_c("tr", [_vm._l(_vm.attributes, function (item, index) {
     return _c("th", {
       key: index,
       attrs: {
         scope: "col"
       }
     }, [_vm._v("\n          " + _vm._s(item.title) + "\n        ")]);
-  }), 0)]), _vm._v(" "), _c("tbody", _vm._l(_vm.data, function (item, index) {
+  }), _vm._v(" "), _vm.btn_read || _vm.btn_update || _vm.btn_delete ? _c("th") : _vm._e()], 2)]), _vm._v(" "), _c("tbody", _vm._l(_vm.data, function (item, index) {
     return _c("tr", {
       key: index
-    }, _vm._l(item, function (value, key) {
+    }, [_vm._l(item, function (value, key) {
       return _c("td", {
         key: key + _vm.randomKey()
       }, [_vm.attributes[key].type === "image" ? [_c("img", {
@@ -6537,7 +6557,13 @@ var render = function render() {
           height: "30"
         }
       })] : _vm.attributes[key].type === "text" ? [_vm._v(_vm._s(value))] : _vm._e()], 2);
-    }), 0);
+    }), _vm._v(" "), _vm.btn_read || _vm.btn_update || _vm.btn_delete ? _c("td", [_vm.btn_read ? _c("button", {
+      staticClass: "btn btn-outline-primary btn-sm"
+    }, [_vm._v("\n            Visualizar\n          ")]) : _vm._e(), _vm._v(" "), _vm.btn_update ? _c("button", {
+      staticClass: "btn btn-outline-secondary btn-sm"
+    }, [_vm._v("\n            Editar\n          ")]) : _vm._e(), _vm._v(" "), _vm.btn_delete ? _c("button", {
+      staticClass: "btn btn-outline-danger btn-sm"
+    }, [_vm._v("\n            Remover\n          ")]) : _vm._e()]) : _vm._e()], 2);
   }), 0)])]);
 };
 

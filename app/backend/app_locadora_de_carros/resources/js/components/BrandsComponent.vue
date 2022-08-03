@@ -18,15 +18,21 @@
                   helpID="helpID"
                   helpText="Opcional. Informe o ID da marca."
                 >
+                  <!-- o valor do input está ligado à variável searchId -->
                   <input
                     type="number"
                     class="form-control"
                     id="inputId"
                     placeholder="ID"
                     aria-describedby="helpID"
-                    v-model="searchData.id"
+                    v-model="searchId"
                   />
                 </input-container-component>
+
+                <!-- se existir filtro aplicado, imprime o valor -->
+                <span v-if="searchData.id" class="form-text"
+                  >Aplicado: {{ searchData.id }}</span
+                >
               </div>
 
               <div class="col mb-3">
@@ -37,15 +43,21 @@
                   helpID="helpNAME"
                   helpText="Opcional. Informe o nome da marca."
                 >
+                  <!-- o valor do input está ligado à variável searchName -->
                   <input
                     type="text"
                     class="form-control"
                     id="inputNAME"
                     placeholder="Nome"
                     aria-describedby="helpNAME"
-                    v-model="searchData.name"
+                    v-model="searchName"
                   />
                 </input-container-component>
+
+                <!-- se existir filtro aplicado, imprime o valor -->
+                <span v-if="searchData.name" class="form-text"
+                  >Aplicado: {{ searchData.name }}</span
+                >
               </div>
             </div>
           </template>
@@ -71,6 +83,9 @@
             <table-component
               :data="cleanData"
               :attributes="brandsAttributes"
+              :btn_read="false"
+              :btn_update="false"
+              :btn_delete="false"
             ></table-component>
           </template>
 
@@ -109,8 +124,6 @@
             </button>
           </template>
         </card-component>
-
-        {{ cleanData }}
       </div>
     </div>
 
@@ -157,8 +170,6 @@
           </input-container-component>
         </div>
 
-        {{ brandName }}
-
         <!-- espaçamento entre os inputs -->
         <div class="mb-3"></div>
 
@@ -183,8 +194,6 @@
             />
           </input-container-component>
         </div>
-
-        {{ brandImage }}
       </template>
 
       <!-- inserindo o footer -->
@@ -216,6 +225,7 @@ export default {
     return {
       // inicializando as variáveis
       baseUrl: "http://0.0.0.0:8080/api/v1/brand",
+      paginationUrl: "",
       brandName: "",
       brandImage: [],
       request_status: "",
@@ -228,6 +238,8 @@ export default {
         image: { title: "Imagem", type: "image" },
       },
       brandsPerPage: 5,
+      searchId: "",
+      searchName: "",
       searchData: { id: "", name: "" },
     };
   },
@@ -266,29 +278,41 @@ export default {
         (p, n) => p + "," + n
       );
 
-      let customListUrl = "";
+      // inicializando a url customizada
+      // se a url de paginação estiver definida, utiliza a mesma
+      // senão utiliza a url base
+      let customListUrl = this.paginationUrl
+        ? this.paginationUrl
+        : this.baseUrl;
 
-      // se na baseUrl já existir a ?, refere-se a url com o atributo page incluído
+      // se na url já existir a ?, refere-se a url com o atributo page incluído
       // logo os próximos atributos deverão ser separados por &
-      if (this.baseUrl.includes("?")) {
-        // incrementando a url base com os parâmetros de filtro
-        customListUrl =
-          this.baseUrl +
-          "&atr_brand=" +
-          atr_brand +
-          "&paginate=" +
-          this.brandsPerPage;
+      // senão inclui a ?
+      customListUrl.includes("?")
+        ? (customListUrl += "&")
+        : (customListUrl += "?");
+
+      // incrementando a url base com os parâmetros de filtro e quantidades de item por página
+      customListUrl +=
+        "atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
+
+      // inicializando a variável com os filtros vazia
+      let filter = "";
+
+      // iterando sobre o array de filtros
+      for (let key in this.searchData) {
+        // se o filtro foi preenchido
+        if (this.searchData[key]) {
+          // se não for o primeiro filtro, insere o separador ;
+          if (filter) filter += ";";
+
+          // considera o filtro conforme formatação key:like:%value%
+          filter += key + ":like:%" + this.searchData[key] + "%";
+        }
       }
-      // senão, o primeiro atributo será separado por ?
-      else {
-        // incrementando a url base com os parâmetros de filtro
-        customListUrl =
-          this.baseUrl +
-          "?atr_brand=" +
-          atr_brand +
-          "&paginate=" +
-          this.brandsPerPage;
-      }
+
+      // se existirem filtros, incrementa a url
+      if (filter) customListUrl += "&filter=" + filter;
 
       return customListUrl;
     },
@@ -328,6 +352,8 @@ export default {
       // obtendo a url customizada para a listagem
       let customListUrl = this.customizeListUrl();
 
+      console.log(customListUrl);
+
       // executando a requisição get
       axios
         .get(customListUrl, config)
@@ -350,27 +376,27 @@ export default {
 
     // método que realiza a paginação
     paginate(v) {
-      // atualiza a base url com a página clicada
-      this.baseUrl = v.url;
+      // atualiza a pagination url com a página clicada
+      this.paginationUrl = v.url;
 
-      // realiza a busca na nova url
+      // realiza a busca
       this.getBrands();
     },
 
     // método que realiza a busca
     search() {
-      let filter = '';
+      // atualizando os filtros
+      this.searchData.id = this.searchId;
+      this.searchData.name = this.searchName;
 
-      for (let key in this.searchData) {
-        if (this.searchData[key]) {
-          filter += key + ":like:" + this.searchData[key] + ";";
-        }
-      }
+      // removendo o atributo de pagina
+      this.paginationUrl = "";
 
-      console.log(filter);
+      // realiza a busca
+      this.getBrands();
     },
 
-    // método que traduz os botçoes de paginação
+    // método que traduz os botões de paginação
     translatePagination(text) {
       // se o texto for Previous
       if (text.includes("Previous"))
