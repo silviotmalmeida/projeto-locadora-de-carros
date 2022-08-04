@@ -83,9 +83,21 @@
             <table-component
               :data="cleanData"
               :attributes="brandsAttributes"
-              :btn_read="false"
-              :btn_update="false"
-              :btn_delete="false"
+              :btn_read="{
+                visible: true,
+                dataToogle: 'modal',
+                dataTarget: '#brandModalRead',
+              }"
+              :btn_update="{
+                visible: false,
+                dataToogle: 'modal',
+                dataTarget: '#brandModalUpdate',
+              }"
+              :btn_delete="{
+                visible: false,
+                dataToogle: 'modal',
+                dataTarget: '#brandModalDelete',
+              }"
             ></table-component>
           </template>
 
@@ -118,7 +130,8 @@
               type="submit"
               class="btn btn-primary float-end"
               data-bs-toggle="modal"
-              data-bs-target="#brandModal"
+              data-bs-target="#brandModalCreate"
+              @click="cleanCreateForm()"
             >
               Adicionar Nova Marca
             </button>
@@ -128,7 +141,7 @@
     </div>
 
     <!-- modal de cadastro -->
-    <modal-component id="brandModal" title="Adicionar Nova Marca">
+    <modal-component id="brandModalCreate" title="Adicionar Nova Marca">
       <!-- inserindo o alert -->
       <template v-slot:alert>
         <!-- alert que será exibido no sucesso da requisição -->
@@ -170,6 +183,8 @@
           </input-container-component>
         </div>
 
+        {{ brandName }}
+
         <!-- espaçamento entre os inputs -->
         <div class="mb-3"></div>
 
@@ -181,7 +196,7 @@
             helpID="helpNewIMAGE"
             helpText="Opcional. Adicione a imagem da marca (formato .png)."
           >
-            <!-- como não é possivel utilizar o v-model em inputs de tipo text,
+            <!-- como não é possivel utilizar o v-model em inputs de tipo file,
             utilizamos o @change para capturarmos o evento onChange do input
             e dispararmos o método getImage() -->
             <input
@@ -194,6 +209,8 @@
             />
           </input-container-component>
         </div>
+
+        {{ brandImage }}
       </template>
 
       <!-- inserindo o footer -->
@@ -206,6 +223,22 @@
         <!-- inserindo o botão de salvar -->
         <button type="button" class="btn btn-primary" @click="save()">
           Salvar
+        </button>
+      </template>
+    </modal-component>
+
+    <!-- modal de visualização -->
+    <modal-component id="brandModalRead" title="Detalhes marca">
+      <!-- inserindo o content -->
+      <template v-slot:content>
+        {{ getBrandData($store.state.selectedBrand) }}
+      </template>
+
+      <!-- inserindo o footer -->
+      <template v-slot:footer>
+        <!-- inserindo o botão de fechar -->
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Fechar
         </button>
       </template>
     </modal-component>
@@ -294,7 +327,8 @@ export default {
 
       // incrementando a url base com os parâmetros de filtro e quantidades de item por página
       customListUrl +=
-        "atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
+        // "atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
+        "&paginate=" + this.brandsPerPage;
 
       // inicializando a variável com os filtros vazia
       let filter = "";
@@ -374,6 +408,10 @@ export default {
         });
     },
 
+    getBrandData(id) {
+      return id;
+    },
+
     // método que realiza a paginação
     paginate(v) {
       // atualiza a pagination url com a página clicada
@@ -410,6 +448,15 @@ export default {
 
       // para os demais casos não traduz
       return text;
+    },
+
+    // método que limpa o formulário de create
+    cleanCreateForm() {
+      // limpando o formulário
+      this.brandName = "";
+      this.brandImage = [];
+      this.request_status = "";
+      this.request_messages = [];
     },
 
     // método responsável por popular a variável brandImage
@@ -452,6 +499,7 @@ export default {
           this.request_messages.push(
             "ID do novo registro: " + response.data.id
           );
+
           console.log(response);
         })
         // em caso de erros, imprime

@@ -49,6 +49,8 @@ Principais comandos do laravel:
 
 - Para atualizar o frontend da seção de autenticação web criada pelo ui utiliza-se o comando: npm install && npm run dev
 
+- Para adicionar o vuex utiliza-se o comando, na pasta raiz do projeto: npm install vuex@"versão"
+
 - Para criar um controller utiliza-se o comando, na pasta raiz do projeto: php artisan make:controller nome-do-controller-Controller
 
 - Para criar um controller com ações padrões pré-definidas utiliza-se o comando, na pasta raiz do projeto: php artisan make:controller --resource nome-do-controller-Controller

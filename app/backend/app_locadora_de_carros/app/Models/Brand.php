@@ -23,7 +23,8 @@ class Brand extends Model
     protected $fillable = [
         'id',
         'name',
-        'image'
+        'image',
+        'created_at'
     ];
 
     // implementando o relacionamento 1-N com a model type

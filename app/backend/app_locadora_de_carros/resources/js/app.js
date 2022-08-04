@@ -8,6 +8,19 @@ require("./bootstrap");
 
 window.Vue = require("vue").default;
 
+import Vue from "vue";
+// importando o Vuex para permitir a utilização da store pelos componentes
+import Vuex from "vuex";
+Vue.use(Vuex);
+
+// criando a store comportilhada pelos componentes
+const store = new Vuex.Store({
+    state: {
+        // atributos globais da aplicação, acessíveis a todos os componentes
+        selectedBrand: {},
+    },
+});
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -19,6 +32,7 @@ window.Vue = require("vue").default;
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
+// registro dos componentes a serem utilizados
 Vue.component(
     "example-component",
     require("./components/ExampleComponent.vue").default
@@ -68,4 +82,7 @@ Vue.component(
 
 const app = new Vue({
     el: "#app",
+
+    // adicionando a store ao app
+    store,
 });
