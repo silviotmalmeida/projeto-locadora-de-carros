@@ -5298,7 +5298,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _PaginationComponent_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./PaginationComponent.vue */ "./resources/js/components/PaginationComponent.vue");
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -5311,11 +5310,7 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  components: {
-    PaginationComponent: _PaginationComponent_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
-  },
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
   props: [],
@@ -5371,6 +5366,13 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
       token = "Bearer " + token;
       return token;
+    },
+    // informações filtradas da marca referente ao id armazenado na store
+    // sempre que a store é atualizada, esta variável irá acompanhar
+    brandData: function brandData() {
+      // obtendo os dados da marca referente ao id atual da store
+      var brandData = this.getBrand(this.$store.state.selectedBrand);
+      return brandData;
     }
   },
   // comportamentos do componente
@@ -5458,8 +5460,31 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         console.log(errors.response);
       });
     },
-    getBrandData: function getBrandData(id) {
-      return id;
+    // método responsável por filtrar o array brandsData pelo id da brand
+    getBrand: function getBrand(id) {
+      // iniciando o objeto de saída
+      var brandData = {}; // se um id for fornecido
+
+      if (id >= 0) {
+        // convertendo o objeto em array
+        Object.entries(this.brandsData.data) // executa um foreach(some) pelo array
+        .some(function (entry) {
+          // obtendo o índice e o objetao atual da iteração
+          var _entry = _slicedToArray(entry, 2),
+              index = _entry[0],
+              brand = _entry[1]; // se o id do objeto corresponder ao recebido pro argumento
+
+
+          if (brand.id == id) {
+            // atribui ao objeto de saída
+            brandData = brand; // saindo do laço (break)
+
+            return true;
+          }
+        });
+      }
+
+      return brandData;
     },
     // método que realiza a paginação
     paginate: function paginate(v) {
@@ -5547,9 +5572,9 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         Object.entries(errors.response.data.errors) // executa um foreach pelo array
         .forEach(function (entry) {
           // popula o array de mensagens que será passado para o alert
-          var _entry = _slicedToArray(entry, 2),
-              key = _entry[0],
-              value = _entry[1];
+          var _entry2 = _slicedToArray(entry, 2),
+              key = _entry2[0],
+              value = _entry2[1];
 
           _this2.request_messages.push(value[0]);
         });
@@ -6146,7 +6171,85 @@ var render = function render() {
     scopedSlots: _vm._u([{
       key: "content",
       fn: function fn() {
-        return [_vm._v("\n      " + _vm._s(_vm.getBrandData(_vm.$store.state.selectedBrand)) + "\n    ")];
+        return [_vm.brandData.id ? [_c("input-container-component", {
+          attrs: {
+            label: "ID",
+            inputId: "inputReadID"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            id: "inputReadID",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.brandData.id
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            label: "Nome",
+            inputId: "inputReadNAME"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            id: "inputReadNAME",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.brandData.name
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            label: "Imagem"
+          }
+        }, [_c("img", {
+          attrs: {
+            src: "/storage/" + _vm.brandData.image,
+            width: "30",
+            height: "30"
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            label: "Data de criação",
+            inputId: "inputReadCREATEDAT"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            id: "inputReadCREATEDAT",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.brandData.created_at
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            label: "Data de atualização",
+            inputId: "inputReadUPDATEDAT"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            id: "inputReadUPDATEDAT",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.brandData.updated_at
+          }
+        })]), _vm._v(" "), _vm.brandData.types.length ? [_c("input-container-component", {
+          attrs: {
+            label: "Modelos associados"
+          }
+        }, _vm._l(_vm.brandData.types, function (value, key) {
+          return _c("ul", {
+            key: key
+          }, [_c("li", [_vm._v(_vm._s(value.name))])]);
+        }), 0)] : _vm._e()] : _vm._e()];
       },
       proxy: true
     }, {

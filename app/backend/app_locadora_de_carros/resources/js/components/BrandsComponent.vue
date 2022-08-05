@@ -231,7 +231,67 @@
     <modal-component id="brandModalRead" title="Detalhes marca">
       <!-- inserindo o content -->
       <template v-slot:content>
-        {{ getBrandData($store.state.selectedBrand) }}
+        <template v-if="brandData.id">
+          <input-container-component label="ID" inputId="inputReadID">
+            <input
+              type="text"
+              class="form-control"
+              id="inputReadID"
+              :value="brandData.id"
+              disabled
+            />
+          </input-container-component>
+
+          <input-container-component label="Nome" inputId="inputReadNAME">
+            <input
+              type="text"
+              class="form-control"
+              id="inputReadNAME"
+              :value="brandData.name"
+              disabled
+            />
+          </input-container-component>
+
+          <input-container-component label="Imagem">
+            <img :src="'/storage/' + brandData.image" width="30" height="30" />
+          </input-container-component>
+
+          <input-container-component
+            label="Data de criação"
+            inputId="inputReadCREATEDAT"
+          >
+            <input
+              type="text"
+              class="form-control"
+              id="inputReadCREATEDAT"
+              :value="brandData.created_at"
+              disabled
+            />
+          </input-container-component>
+
+          <input-container-component
+            label="Data de atualização"
+            inputId="inputReadUPDATEDAT"
+          >
+            <input
+              type="text"
+              class="form-control"
+              id="inputReadUPDATEDAT"
+              :value="brandData.updated_at"
+              disabled
+            />
+          </input-container-component>
+
+          <template v-if="brandData.types.length">
+            <input-container-component label="Modelos associados">
+              <ul v-for="(value, key) in brandData.types" :key="key">
+                <!-- se o link for diferente null, não renderiza o item -->
+                <!-- se o active for true, adiciona a classe active -->
+                <li>{{ value.name }}</li>
+              </ul>
+            </input-container-component>
+          </template>
+        </template>
       </template>
 
       <!-- inserindo o footer -->
@@ -246,9 +306,7 @@
 </template>
 
 <script>
-import PaginationComponent from "./PaginationComponent.vue";
 export default {
-  components: { PaginationComponent },
   // propriedades a serem recebidas para criação do componente
   // as propriedades são definidas como atributos na tag do componente
   props: [],
@@ -298,6 +356,15 @@ export default {
       token = "Bearer " + token;
 
       return token;
+    },
+
+    // informações filtradas da marca referente ao id armazenado na store
+    // sempre que a store é atualizada, esta variável irá acompanhar
+    brandData() {
+      // obtendo os dados da marca referente ao id atual da store
+      let brandData = this.getBrand(this.$store.state.selectedBrand);
+
+      return brandData;
     },
   },
 
@@ -408,8 +475,32 @@ export default {
         });
     },
 
-    getBrandData(id) {
-      return id;
+    // método responsável por filtrar o array brandsData pelo id da brand
+    getBrand(id) {
+      // iniciando o objeto de saída
+      let brandData = {};
+
+      // se um id for fornecido
+      if (id >= 0) {
+        // convertendo o objeto em array
+        Object.entries(this.brandsData.data)
+          // executa um foreach(some) pelo array
+          .some((entry) => {
+            // obtendo o índice e o objetao atual da iteração
+            const [index, brand] = entry;
+
+            // se o id do objeto corresponder ao recebido pro argumento
+            if (brand.id == id) {
+              // atribui ao objeto de saída
+              brandData = brand;
+
+              // saindo do laço (break)
+              return true;
+            }
+          });
+      }
+
+      return brandData;
     },
 
     // método que realiza a paginação

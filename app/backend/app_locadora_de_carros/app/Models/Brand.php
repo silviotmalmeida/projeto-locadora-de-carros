@@ -24,7 +24,8 @@ class Brand extends Model
         'id',
         'name',
         'image',
-        'created_at'
+        'created_at',
+        'updated_at'
     ];
 
     // implementando o relacionamento 1-N com a model type
