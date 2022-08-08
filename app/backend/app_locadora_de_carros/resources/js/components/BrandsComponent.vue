@@ -94,7 +94,7 @@
                 dataTarget: '#brandModalUpdate',
               }"
               :btn_delete="{
-                visible: false,
+                visible: true,
                 dataToogle: 'modal',
                 dataTarget: '#brandModalDelete',
               }"
@@ -221,7 +221,7 @@
         </button>
 
         <!-- inserindo o botão de salvar -->
-        <button type="button" class="btn btn-primary" @click="save()">
+        <button type="button" class="btn btn-primary" @click="create()">
           Salvar
         </button>
       </template>
@@ -260,11 +260,18 @@
             label="Data de criação"
             inputId="inputReadCREATEDAT"
           >
+            <!-- exibindo a data formatada -->
             <input
               type="text"
               class="form-control"
               id="inputReadCREATEDAT"
-              :value="brandData.created_at"
+              :value="
+                new Intl.DateTimeFormat('pt-BR', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                }).format(new Date(brandData.created_at))
+              "
               disabled
             />
           </input-container-component>
@@ -273,11 +280,18 @@
             label="Data de atualização"
             inputId="inputReadUPDATEDAT"
           >
+            <!-- exibindo a data formatada -->
             <input
               type="text"
               class="form-control"
               id="inputReadUPDATEDAT"
-              :value="brandData.updated_at"
+              :value="
+                new Intl.DateTimeFormat('pt-BR', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                }).format(new Date(brandData.updated_at))
+              "
               disabled
             />
           </input-container-component>
@@ -299,6 +313,52 @@
         <!-- inserindo o botão de fechar -->
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Fechar
+        </button>
+      </template>
+    </modal-component>
+
+    <!-- modal de remoção -->
+    <modal-component id="brandModalDelete" title="Remover marca">
+      <!-- inserindo o content -->
+      <template v-slot:content>
+        <template v-if="brandData.id">
+          <input-container-component label="ID" inputId="inputReadID">
+            <input
+              type="text"
+              class="form-control"
+              id="inputReadID"
+              :value="brandData.id"
+              disabled
+            />
+          </input-container-component>
+
+          <input-container-component label="Nome" inputId="inputReadNAME">
+            <input
+              type="text"
+              class="form-control"
+              id="inputReadNAME"
+              :value="brandData.name"
+              disabled
+            />
+          </input-container-component>
+        </template>
+      </template>
+
+      <!-- inserindo o footer -->
+      <template v-slot:footer>
+        <!-- inserindo o botão de fechar -->
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Fechar
+        </button>
+
+        <!-- inserindo o botão de remover -->
+        <button
+          v-if="brandData.id"
+          type="button"
+          class="btn btn-danger"
+          @click="del()"
+        >
+          Remover
         </button>
       </template>
     </modal-component>
@@ -546,6 +606,11 @@ export default {
       // limpando o formulário
       this.brandName = "";
       this.brandImage = [];
+      this.cleanMessages();
+    },
+
+    // método que limpa o status e array de mensagens
+    cleanMessages() {
       this.request_status = "";
       this.request_messages = [];
     },
@@ -556,7 +621,7 @@ export default {
       this.brandImage = e.target.files;
     },
     // método responsável salvar no BD
-    save() {
+    create() {
       // definindo as configurações da requisição
       let config = {
         headers: {
@@ -611,6 +676,57 @@ export default {
               const [key, value] = entry;
               this.request_messages.push(value[0]);
             });
+          console.log(errors.response);
+        });
+    },
+
+    // método responsável por remover do BD
+    del() {
+      // exibindo o diálogo de confirmação
+      let confirmation = confirm("Tem certeza que deseja remover o registro?");
+
+      // se não houver confirmação, cancela
+      if (!confirmation) return false;
+
+      // definindo as configurações da requisição
+      let config = {
+        headers: {
+          Accept: "application/json",
+          Authorization: this.token,
+        },
+      };
+
+      // definindo os dados a serem enviados pela requisição
+      let formData = new FormData();
+      // alterando o método para que o Laravel entenda que trata-se de delete
+      formData.append("_method", "delete");
+
+      // obtendo a url customizada para a remoção
+      let url = this.baseUrl + "/" + this.$store.state.selectedBrand;
+
+      // executando a requisição post
+      axios
+        .post(url, formData, config)
+        // se houve sucesso na requisição
+        .then((response) => {
+          // atribui status de sucesso para exibir o alert
+          this.request_status = "success";
+
+          // atribui as mensagens de sucesso para serem utilizadas no alert
+          this.request_messages.push("Registro removido com sucesso!");
+
+          this.getBrands();
+
+          console.log(response);
+        })
+        // em caso de erros, imprime
+        .catch((errors) => {
+          // atribui status de error para exibir o alert
+          this.request_status = "error";
+
+          /// atribui as mensagens de erro para serem utilizadas no alert
+          this.request_messages.push("O registro não pôde ser removido!");
+
           console.log(errors.response);
         });
     },

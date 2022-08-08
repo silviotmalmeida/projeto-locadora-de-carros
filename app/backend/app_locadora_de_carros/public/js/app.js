@@ -5519,6 +5519,10 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // limpando o formulário
       this.brandName = "";
       this.brandImage = [];
+      this.cleanMessages();
+    },
+    // método que limpa o status e array de mensagens
+    cleanMessages: function cleanMessages() {
       this.request_status = "";
       this.request_messages = [];
     },
@@ -5528,7 +5532,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       this.brandImage = e.target.files;
     },
     // método responsável salvar no BD
-    save: function save() {
+    create: function create() {
       var _this2 = this;
 
       // definindo as configurações da requisição
@@ -5578,6 +5582,48 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
           _this2.request_messages.push(value[0]);
         });
+        console.log(errors.response);
+      });
+    },
+    // método responsável por remover do BD
+    del: function del() {
+      var _this3 = this;
+
+      // exibindo o diálogo de confirmação
+      var confirmation = confirm("Tem certeza que deseja remover o registro?"); // se não houver confirmação, cancela
+
+      if (!confirmation) return false; // definindo as configurações da requisição
+
+      var config = {
+        headers: {
+          Accept: "application/json",
+          Authorization: this.token
+        }
+      }; // definindo os dados a serem enviados pela requisição
+
+      var formData = new FormData(); // alterando o método para que o Laravel entenda que trata-se de delete
+
+      formData.append("_method", "delete"); // obtendo a url customizada para a remoção
+
+      var url = this.baseUrl + "/" + this.$store.state.selectedBrand; // executando a requisição post
+
+      axios.post(url, formData, config) // se houve sucesso na requisição
+      .then(function (response) {
+        // atribui status de sucesso para exibir o alert
+        _this3.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
+
+        _this3.request_messages.push("Registro removido com sucesso!");
+
+        _this3.getBrands();
+
+        console.log(response);
+      }) // em caso de erros, imprime
+      ["catch"](function (errors) {
+        // atribui status de error para exibir o alert
+        _this3.request_status = "error"; /// atribui as mensagens de erro para serem utilizadas no alert
+
+        _this3.request_messages.push("O registro não pôde ser removido!");
+
         console.log(errors.response);
       });
     }
@@ -6013,7 +6059,7 @@ var render = function render() {
               dataTarget: "#brandModalUpdate"
             },
             btn_delete: {
-              visible: false,
+              visible: true,
               dataToogle: "modal",
               dataTarget: "#brandModalDelete"
             }
@@ -6156,7 +6202,7 @@ var render = function render() {
           },
           on: {
             click: function click($event) {
-              return _vm.save();
+              return _vm.create();
             }
           }
         }, [_vm._v("\n        Salvar\n      ")])];
@@ -6224,7 +6270,11 @@ var render = function render() {
             disabled: ""
           },
           domProps: {
-            value: _vm.brandData.created_at
+            value: new Intl.DateTimeFormat("pt-BR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric"
+            }).format(new Date(_vm.brandData.created_at))
           }
         })]), _vm._v(" "), _c("input-container-component", {
           attrs: {
@@ -6239,7 +6289,11 @@ var render = function render() {
             disabled: ""
           },
           domProps: {
-            value: _vm.brandData.updated_at
+            value: new Intl.DateTimeFormat("pt-BR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric"
+            }).format(new Date(_vm.brandData.updated_at))
           }
         })]), _vm._v(" "), _vm.brandData.types.length ? [_c("input-container-component", {
           attrs: {
@@ -6262,6 +6316,70 @@ var render = function render() {
             "data-bs-dismiss": "modal"
           }
         }, [_vm._v("\n        Fechar\n      ")])];
+      },
+      proxy: true
+    }])
+  }), _vm._v(" "), _c("modal-component", {
+    attrs: {
+      id: "brandModalDelete",
+      title: "Remover marca"
+    },
+    scopedSlots: _vm._u([{
+      key: "content",
+      fn: function fn() {
+        return [_vm.brandData.id ? [_c("input-container-component", {
+          attrs: {
+            label: "ID",
+            inputId: "inputReadID"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            id: "inputReadID",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.brandData.id
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            label: "Nome",
+            inputId: "inputReadNAME"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            id: "inputReadNAME",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.brandData.name
+          }
+        })])] : _vm._e()];
+      },
+      proxy: true
+    }, {
+      key: "footer",
+      fn: function fn() {
+        return [_c("button", {
+          staticClass: "btn btn-secondary",
+          attrs: {
+            type: "button",
+            "data-bs-dismiss": "modal"
+          }
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id ? _c("button", {
+          staticClass: "btn btn-danger",
+          attrs: {
+            type: "button"
+          },
+          on: {
+            click: function click($event) {
+              return _vm.del();
+            }
+          }
+        }, [_vm._v("\n        Remover\n      ")]) : _vm._e()];
       },
       proxy: true
     }])
@@ -6738,6 +6856,11 @@ var render = function render() {
       attrs: {
         "data-bs-toggle": _vm.btn_delete.dataToogle,
         "data-bs-target": _vm.btn_delete.dataTarget
+      },
+      on: {
+        click: function click($event) {
+          return _vm.setStore(item);
+        }
       }
     }, [_vm._v("\n            Remover\n          ")]) : _vm._e()]) : _vm._e()], 2);
   }), 0)])]);

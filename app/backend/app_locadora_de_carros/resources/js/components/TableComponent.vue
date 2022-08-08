@@ -60,6 +60,7 @@
               class="btn btn-outline-danger btn-sm"
               :data-bs-toggle="btn_delete.dataToogle"
               :data-bs-target="btn_delete.dataTarget"
+              @click="setStore(item)"
             >
               Remover
             </button>
