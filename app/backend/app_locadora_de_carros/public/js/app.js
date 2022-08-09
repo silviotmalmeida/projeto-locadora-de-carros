@@ -5558,15 +5558,24 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       axios.post(this.baseUrl, formData, config) // se houve sucesso na requisição
       .then(function (response) {
         // atribui status de sucesso para exibir o alert
-        _this2.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
+        _this2.request_status = "success"; // limpando o array de erros
 
-        _this2.request_messages.push("ID do novo registro: " + response.data.id);
+        _this2.request_messages = []; // atribui as mensagens de sucesso para serem utilizadas no alert
+
+        _this2.request_messages.push("ID do novo registro: " + response.data.id); // removendo o atributo de pagina
+
+
+        _this2.paginationUrl = ""; // atualiza a lista de marcas
+
+        _this2.getBrands();
 
         console.log(response);
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         // atribui status de error para exibir o alert
-        _this2.request_status = "error"; // atribui as mensagens de erro para serem utilizadas no alert
+        _this2.request_status = "error"; // limpando o array de erros
+
+        _this2.request_messages = []; // atribui as mensagens de erro para serem utilizadas no alert
         // adicionando a mensagem geral
 
         _this2.request_messages.push(errors.response.data.message); // adicionando as demais mensagens
@@ -5603,16 +5612,20 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
       var formData = new FormData(); // alterando o método para que o Laravel entenda que trata-se de delete
 
-      formData.append("_method", "delete"); // obtendo a url customizada para a remoção
+      formData.append("_method", "delete");
+      var brandId = this.$store.state.selectedBrand; // obtendo a url customizada para a remoção
 
-      var url = this.baseUrl + "/" + this.$store.state.selectedBrand; // executando a requisição post
+      var url = this.baseUrl + "/" + brandId; // executando a requisição post
 
       axios.post(url, formData, config) // se houve sucesso na requisição
       .then(function (response) {
         // atribui status de sucesso para exibir o alert
         _this3.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
 
-        _this3.request_messages.push("Registro removido com sucesso!");
+        _this3.request_messages.push("Registro " + brandId + " removido com sucesso!"); // removendo o atributo de pagina
+
+
+        _this3.paginationUrl = ""; // atualiza a lista de marcas
 
         _this3.getBrands();
 
@@ -5620,9 +5633,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         // atribui status de error para exibir o alert
-        _this3.request_status = "error"; /// atribui as mensagens de erro para serem utilizadas no alert
+        _this3.request_status = "error"; // limpando o array de erros
 
-        _this3.request_messages.push("O registro não pôde ser removido!");
+        _this3.request_messages = []; // atribui as mensagens de erro para serem utilizadas no alert
+        // adicionando a mensagem geral
+
+        _this3.request_messages.push(errors.response.data.msg);
 
         console.log(errors.response);
       });
@@ -6124,7 +6140,7 @@ var render = function render() {
         }) : _vm._e()];
       },
       proxy: true
-    }, {
+    }, _vm.request_status != "success" ? {
       key: "content",
       fn: function fn() {
         return [_c("div", {
@@ -6186,7 +6202,7 @@ var render = function render() {
         })])], 1), _vm._v("\n\n      " + _vm._s(_vm.brandImage) + "\n    ")];
       },
       proxy: true
-    }, {
+    } : null, {
       key: "footer",
       fn: function fn() {
         return [_c("button", {
@@ -6195,7 +6211,7 @@ var render = function render() {
             type: "button",
             "data-bs-dismiss": "modal"
           }
-        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _c("button", {
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.request_status != "success" ? _c("button", {
           staticClass: "btn btn-primary",
           attrs: {
             type: "button"
@@ -6205,10 +6221,10 @@ var render = function render() {
               return _vm.create();
             }
           }
-        }, [_vm._v("\n        Salvar\n      ")])];
+        }, [_vm._v("\n        Salvar\n      ")]) : _vm._e()];
       },
       proxy: true
-    }])
+    }], null, true)
   }), _vm._v(" "), _c("modal-component", {
     attrs: {
       id: "brandModalRead",
@@ -6325,9 +6341,27 @@ var render = function render() {
       title: "Remover marca"
     },
     scopedSlots: _vm._u([{
+      key: "alert",
+      fn: function fn() {
+        return [_vm.request_status == "success" ? _c("alert-component", {
+          attrs: {
+            type: "success",
+            text: "Registro removido com sucesso!",
+            details: _vm.request_messages
+          }
+        }) : _vm._e(), _vm._v(" "), _vm.request_status == "error" ? _c("alert-component", {
+          attrs: {
+            type: "danger",
+            text: "Erro durante remoção:",
+            details: _vm.request_messages
+          }
+        }) : _vm._e()];
+      },
+      proxy: true
+    }, _vm.request_status != "success" ? {
       key: "content",
       fn: function fn() {
-        return [_vm.brandData.id ? [_c("input-container-component", {
+        return [_c("input-container-component", {
           attrs: {
             label: "ID",
             inputId: "inputReadID"
@@ -6357,10 +6391,10 @@ var render = function render() {
           domProps: {
             value: _vm.brandData.name
           }
-        })])] : _vm._e()];
+        })])];
       },
       proxy: true
-    }, {
+    } : null, {
       key: "footer",
       fn: function fn() {
         return [_c("button", {
@@ -6369,7 +6403,7 @@ var render = function render() {
             type: "button",
             "data-bs-dismiss": "modal"
           }
-        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id ? _c("button", {
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.request_status != "success" ? _c("button", {
           staticClass: "btn btn-danger",
           attrs: {
             type: "button"
@@ -6382,7 +6416,7 @@ var render = function render() {
         }, [_vm._v("\n        Remover\n      ")]) : _vm._e()];
       },
       proxy: true
-    }])
+    }], null, true)
   })], 1);
 };
 

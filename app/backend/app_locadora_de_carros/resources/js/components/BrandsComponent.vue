@@ -162,7 +162,7 @@
       </template>
 
       <!-- inserindo o content -->
-      <template v-slot:content>
+      <template v-slot:content v-if="request_status != 'success'">
         <!-- incluindo o componente de input para o Nome-->
         <div class="form-group">
           <input-container-component
@@ -221,7 +221,12 @@
         </button>
 
         <!-- inserindo o botão de salvar -->
-        <button type="button" class="btn btn-primary" @click="create()">
+        <button
+          v-if="request_status != 'success'"
+          type="button"
+          class="btn btn-primary"
+          @click="create()"
+        >
           Salvar
         </button>
       </template>
@@ -319,29 +324,45 @@
 
     <!-- modal de remoção -->
     <modal-component id="brandModalDelete" title="Remover marca">
-      <!-- inserindo o content -->
-      <template v-slot:content>
-        <template v-if="brandData.id">
-          <input-container-component label="ID" inputId="inputReadID">
-            <input
-              type="text"
-              class="form-control"
-              id="inputReadID"
-              :value="brandData.id"
-              disabled
-            />
-          </input-container-component>
+      <!-- inserindo o alert -->
+      <template v-slot:alert>
+        <!-- alert que será exibido no sucesso da requisição -->
+        <alert-component
+          type="success"
+          text="Registro removido com sucesso!"
+          :details="request_messages"
+          v-if="request_status == 'success'"
+        ></alert-component>
 
-          <input-container-component label="Nome" inputId="inputReadNAME">
-            <input
-              type="text"
-              class="form-control"
-              id="inputReadNAME"
-              :value="brandData.name"
-              disabled
-            />
-          </input-container-component>
-        </template>
+        <!-- alert que será exibido no erro da requisição -->
+        <alert-component
+          type="danger"
+          text="Erro durante remoção:"
+          :details="request_messages"
+          v-if="request_status == 'error'"
+        ></alert-component>
+      </template>
+      <!-- inserindo o content -->
+      <template v-slot:content v-if="request_status != 'success'">
+        <input-container-component label="ID" inputId="inputReadID">
+          <input
+            type="text"
+            class="form-control"
+            id="inputReadID"
+            :value="brandData.id"
+            disabled
+          />
+        </input-container-component>
+
+        <input-container-component label="Nome" inputId="inputReadNAME">
+          <input
+            type="text"
+            class="form-control"
+            id="inputReadNAME"
+            :value="brandData.name"
+            disabled
+          />
+        </input-container-component>
       </template>
 
       <!-- inserindo o footer -->
@@ -353,7 +374,7 @@
 
         <!-- inserindo o botão de remover -->
         <button
-          v-if="brandData.id"
+          v-if="request_status != 'success'"
           type="button"
           class="btn btn-danger"
           @click="del()"
@@ -651,10 +672,19 @@ export default {
           // atribui status de sucesso para exibir o alert
           this.request_status = "success";
 
+          // limpando o array de erros
+          this.request_messages = [];
+
           // atribui as mensagens de sucesso para serem utilizadas no alert
           this.request_messages.push(
             "ID do novo registro: " + response.data.id
           );
+
+          // removendo o atributo de pagina
+          this.paginationUrl = "";
+
+          // atualiza a lista de marcas
+          this.getBrands();
 
           console.log(response);
         })
@@ -662,6 +692,9 @@ export default {
         .catch((errors) => {
           // atribui status de error para exibir o alert
           this.request_status = "error";
+
+          // limpando o array de erros
+          this.request_messages = [];
 
           // atribui as mensagens de erro para serem utilizadas no alert
           // adicionando a mensagem geral
@@ -701,8 +734,10 @@ export default {
       // alterando o método para que o Laravel entenda que trata-se de delete
       formData.append("_method", "delete");
 
+      let brandId = this.$store.state.selectedBrand;
+
       // obtendo a url customizada para a remoção
-      let url = this.baseUrl + "/" + this.$store.state.selectedBrand;
+      let url = this.baseUrl + "/" + brandId;
 
       // executando a requisição post
       axios
@@ -713,8 +748,14 @@ export default {
           this.request_status = "success";
 
           // atribui as mensagens de sucesso para serem utilizadas no alert
-          this.request_messages.push("Registro removido com sucesso!");
+          this.request_messages.push(
+            "Registro " + brandId + " removido com sucesso!"
+          );
 
+          // removendo o atributo de pagina
+          this.paginationUrl = "";
+
+          // atualiza a lista de marcas
           this.getBrands();
 
           console.log(response);
@@ -724,8 +765,12 @@ export default {
           // atribui status de error para exibir o alert
           this.request_status = "error";
 
-          /// atribui as mensagens de erro para serem utilizadas no alert
-          this.request_messages.push("O registro não pôde ser removido!");
+          // limpando o array de erros
+          this.request_messages = [];
+
+          // atribui as mensagens de erro para serem utilizadas no alert
+          // adicionando a mensagem geral
+          this.request_messages.push(errors.response.data.msg);
 
           console.log(errors.response);
         });
