@@ -5318,14 +5318,23 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
   data: function data() {
     return {
       // inicializando as variáveis
+      // endpoint principal
       baseUrl: "http://0.0.0.0:8080/api/v1/brand",
+      // enpoint com paginação, inicia vazio e é atribuído ao clicar nos botões de paginação
       paginationUrl: "",
+      // atributo nome no formulário de criação
       brandName: "",
+      // atributo imagem no formulário de criação
       brandImage: [],
+      // status da requisição (sucess ou error)
       request_status: "",
+      // mensagens a serem exibidas nos alerts
       request_messages: [],
+      // dados completos recebidos da api
       brandsData: [],
+      // dados filtrados para exibição na listagem
       cleanData: [],
+      // atributos a serem exibidos na tabela de listagem
       brandsAttributes: {
         id: {
           title: "ID",
@@ -5340,9 +5349,13 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
           type: "image"
         }
       },
+      // quantidade de registros por página na listagem
       brandsPerPage: 5,
+      // atributo id no formulário de busca
       searchId: "",
+      // atributo nome no formulário de busca
       searchName: "",
+      // atributos a serem considerados na busca
       searchData: {
         id: "",
         name: ""
@@ -5444,8 +5457,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         }
       }; // obtendo a url customizada para a listagem
 
-      var customListUrl = this.customizeListUrl();
-      console.log(customListUrl); // executando a requisição get
+      var customListUrl = this.customizeListUrl(); // executando a requisição get
 
       axios.get(customListUrl, config) // se houve sucesso na requisição
       .then(function (response) {
@@ -5453,8 +5465,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         _this.brandsData = response.data; // popula o array de marcas limpo para envio ao componente table
 
         _this.cleanData = _this.clearData();
-        console.log(_this.brandsData);
-        console.log(_this.cleanData);
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         console.log(errors.response);
@@ -5531,6 +5541,11 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // popula a variável através do evento recebido
       this.brandImage = e.target.files;
     },
+    // método responsável por atualizar a variável brandData.image
+    updateImage: function updateImage(e) {
+      // popula a variável através do evento recebido
+      this.brandData.image = e.target.files;
+    },
     // método responsável salvar no BD
     create: function create() {
       var _this2 = this;
@@ -5551,9 +5566,8 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       if (this.brandImage[0]) {
         // adiciona a imagem na requisição
         formData.append("image", this.brandImage[0]);
-      }
+      } // executando a requisição post
 
-      console.log(this.baseUrl, config, formData); // executando a requisição post
 
       axios.post(this.baseUrl, formData, config) // se houve sucesso na requisição
       .then(function (response) {
@@ -5568,8 +5582,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         _this2.paginationUrl = ""; // atualiza a lista de marcas
 
         _this2.getBrands();
-
-        console.log(response);
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         // atribui status de error para exibir o alert
@@ -5591,7 +5603,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
           _this2.request_messages.push(value[0]);
         });
-        console.log(errors.response);
       });
     },
     // método responsável por remover do BD
@@ -5628,8 +5639,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         _this3.paginationUrl = ""; // atualiza a lista de marcas
 
         _this3.getBrands();
-
-        console.log(response);
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         // atribui status de error para exibir o alert
@@ -5639,9 +5648,64 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         // adicionando a mensagem geral
 
         _this3.request_messages.push(errors.response.data.msg);
-
-        console.log(errors.response);
       });
+    },
+    // método responsável atualizar no BD
+    update: function update() {
+      console.log(this.brandData.name, this.brandData.image); // // definindo as configurações da requisição
+      // let config = {
+      //   headers: {
+      //     "Content-Type": "multipart/form-data",
+      //     Accept: "application/json",
+      //     Authorization: this.token,
+      //   },
+      // };
+      // // definindo os dados a serem inseridos no BD
+      // let formData = new FormData();
+      // // adiciona o nome na requisição
+      // formData.append("name", this.brandName);
+      // // se alguma imagem for selecionada
+      // if (this.brandImage[0]) {
+      //   // adiciona a imagem na requisição
+      //   formData.append("image", this.brandImage[0]);
+      // }
+      // // executando a requisição post
+      // axios
+      //   .post(this.baseUrl, formData, config)
+      //   // se houve sucesso na requisição
+      //   .then((response) => {
+      //     // atribui status de sucesso para exibir o alert
+      //     this.request_status = "success";
+      //     // limpando o array de erros
+      //     this.request_messages = [];
+      //     // atribui as mensagens de sucesso para serem utilizadas no alert
+      //     this.request_messages.push(
+      //       "ID do novo registro: " + response.data.id
+      //     );
+      //     // removendo o atributo de pagina
+      //     this.paginationUrl = "";
+      //     // atualiza a lista de marcas
+      //     this.getBrands();
+      //   })
+      //   // em caso de erros, imprime
+      //   .catch((errors) => {
+      //     // atribui status de error para exibir o alert
+      //     this.request_status = "error";
+      //     // limpando o array de erros
+      //     this.request_messages = [];
+      //     // atribui as mensagens de erro para serem utilizadas no alert
+      //     // adicionando a mensagem geral
+      //     this.request_messages.push(errors.response.data.message);
+      //     // adicionando as demais mensagens
+      //     // converte o objeto em array
+      //     Object.entries(errors.response.data.errors)
+      //       // executa um foreach pelo array
+      //       .forEach((entry) => {
+      //         // popula o array de mensagens que será passado para o alert
+      //         const [key, value] = entry;
+      //         this.request_messages.push(value[0]);
+      //       });
+      //   });
     }
   },
   // comportamentos automáticos após a montagem do componente
@@ -6070,7 +6134,7 @@ var render = function render() {
               dataTarget: "#brandModalRead"
             },
             btn_update: {
-              visible: false,
+              visible: true,
               dataToogle: "modal",
               dataTarget: "#brandModalUpdate"
             },
@@ -6120,7 +6184,7 @@ var render = function render() {
   })], 1)]), _vm._v(" "), _c("modal-component", {
     attrs: {
       id: "brandModalCreate",
-      title: "Adicionar Nova Marca"
+      title: "Criar Nova Marca"
     },
     scopedSlots: _vm._u([{
       key: "alert",
@@ -6148,8 +6212,8 @@ var render = function render() {
         }, [_c("input-container-component", {
           attrs: {
             label: "Nome",
-            inputId: "inputNewNAME",
-            helpID: "helpNewNAME",
+            inputId: "inputCreateNAME",
+            helpID: "helpCreateNAME",
             helpText: "Obrigatório. Informe o nome da marca."
           }
         }, [_c("input", {
@@ -6162,9 +6226,9 @@ var render = function render() {
           staticClass: "form-control",
           attrs: {
             type: "text",
-            id: "inputNewNAME",
+            id: "inputCreateNAME",
             placeholder: "Nome",
-            "aria-describedby": "helpNewNAME"
+            "aria-describedby": "helpCreateNAME"
           },
           domProps: {
             value: _vm.brandName
@@ -6175,31 +6239,31 @@ var render = function render() {
               _vm.brandName = $event.target.value;
             }
           }
-        })])], 1), _vm._v("\n\n      " + _vm._s(_vm.brandName) + "\n\n      "), _vm._v(" "), _c("div", {
+        })])], 1), _vm._v(" "), _c("div", {
           staticClass: "mb-3"
         }), _vm._v(" "), _c("div", {
           staticClass: "form-group"
         }, [_c("input-container-component", {
           attrs: {
             label: "Imagem",
-            inputId: "inputNewIMAGE",
-            helpID: "helpNewIMAGE",
+            inputId: "inputCreateIMAGE",
+            helpID: "helpCreateIMAGE",
             helpText: "Opcional. Adicione a imagem da marca (formato .png)."
           }
         }, [_c("input", {
           staticClass: "form-control",
           attrs: {
             type: "file",
-            id: "inputNewIMAGE",
+            id: "inputCreateIMAGE",
             placeholder: "Imagem",
-            "aria-describedby": "helpNewIMAGE"
+            "aria-describedby": "helpCreateIMAGE"
           },
           on: {
             change: function change($event) {
               return _vm.getImage($event);
             }
           }
-        })])], 1), _vm._v("\n\n      " + _vm._s(_vm.brandImage) + "\n    ")];
+        })])], 1)];
       },
       proxy: true
     } : null, {
@@ -6221,7 +6285,7 @@ var render = function render() {
               return _vm.create();
             }
           }
-        }, [_vm._v("\n        Salvar\n      ")]) : _vm._e()];
+        }, [_vm._v("\n        Criar\n      ")]) : _vm._e()];
       },
       proxy: true
     }], null, true)
@@ -6230,10 +6294,10 @@ var render = function render() {
       id: "brandModalRead",
       title: "Detalhes marca"
     },
-    scopedSlots: _vm._u([{
+    scopedSlots: _vm._u([_vm.brandData.id ? {
       key: "content",
       fn: function fn() {
-        return [_vm.brandData.id ? [_c("input-container-component", {
+        return [_c("input-container-component", {
           attrs: {
             label: "ID",
             inputId: "inputReadID"
@@ -6319,10 +6383,10 @@ var render = function render() {
           return _c("ul", {
             key: key
           }, [_c("li", [_vm._v(_vm._s(value.name))])]);
-        }), 0)] : _vm._e()] : _vm._e()];
+        }), 0)] : _vm._e()];
       },
       proxy: true
-    }, {
+    } : null, _vm.brandData.id ? {
       key: "footer",
       fn: function fn() {
         return [_c("button", {
@@ -6334,7 +6398,7 @@ var render = function render() {
         }, [_vm._v("\n        Fechar\n      ")])];
       },
       proxy: true
-    }])
+    } : null], null, true)
   }), _vm._v(" "), _c("modal-component", {
     attrs: {
       id: "brandModalDelete",
@@ -6358,19 +6422,19 @@ var render = function render() {
         }) : _vm._e()];
       },
       proxy: true
-    }, _vm.request_status != "success" ? {
+    }, _vm.brandData.id && _vm.request_status != "success" ? {
       key: "content",
       fn: function fn() {
         return [_c("input-container-component", {
           attrs: {
             label: "ID",
-            inputId: "inputReadID"
+            inputId: "inputDeleteID"
           }
         }, [_c("input", {
           staticClass: "form-control",
           attrs: {
             type: "text",
-            id: "inputReadID",
+            id: "inputDeleteID",
             disabled: ""
           },
           domProps: {
@@ -6379,13 +6443,13 @@ var render = function render() {
         })]), _vm._v(" "), _c("input-container-component", {
           attrs: {
             label: "Nome",
-            inputId: "inputReadNAME"
+            inputId: "inputDeleteNAME"
           }
         }, [_c("input", {
           staticClass: "form-control",
           attrs: {
             type: "text",
-            id: "inputReadNAME",
+            id: "inputDeleteNAME",
             disabled: ""
           },
           domProps: {
@@ -6403,7 +6467,7 @@ var render = function render() {
             type: "button",
             "data-bs-dismiss": "modal"
           }
-        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.request_status != "success" ? _c("button", {
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id && _vm.request_status != "success" ? _c("button", {
           staticClass: "btn btn-danger",
           attrs: {
             type: "button"
@@ -6414,6 +6478,121 @@ var render = function render() {
             }
           }
         }, [_vm._v("\n        Remover\n      ")]) : _vm._e()];
+      },
+      proxy: true
+    }], null, true)
+  }), _vm._v(" "), _c("modal-component", {
+    attrs: {
+      id: "brandModalUpdate",
+      title: "Atualizar Marca"
+    },
+    scopedSlots: _vm._u([{
+      key: "alert",
+      fn: function fn() {
+        return [_vm.request_status == "success" ? _c("alert-component", {
+          attrs: {
+            type: "success",
+            text: "Atualização realizada com sucesso!",
+            details: _vm.request_messages
+          }
+        }) : _vm._e(), _vm._v(" "), _vm.request_status == "error" ? _c("alert-component", {
+          attrs: {
+            type: "danger",
+            text: "Erro durante atualização:",
+            details: _vm.request_messages
+          }
+        }) : _vm._e()];
+      },
+      proxy: true
+    }, _vm.brandData.id && _vm.request_status != "success" ? {
+      key: "content",
+      fn: function fn() {
+        return [_c("div", {
+          staticClass: "form-group"
+        }, [_c("input-container-component", {
+          attrs: {
+            label: "Nome",
+            inputId: "inputUpdateNAME",
+            helpID: "helpUpdateNAME",
+            helpText: "Obrigatório. Informe o nome da marca."
+          }
+        }, [_c("input", {
+          directives: [{
+            name: "model",
+            rawName: "v-model",
+            value: _vm.brandData.name,
+            expression: "brandData.name"
+          }],
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            id: "inputUpdateNAME",
+            placeholder: "Nome",
+            "aria-describedby": "helpUpdateNAME"
+          },
+          domProps: {
+            value: _vm.brandData.name
+          },
+          on: {
+            input: function input($event) {
+              if ($event.target.composing) return;
+
+              _vm.$set(_vm.brandData, "name", $event.target.value);
+            }
+          }
+        })]), _vm._v("\n\n        " + _vm._s(_vm.brandData.name) + "\n      ")], 1), _vm._v(" "), _c("div", {
+          staticClass: "mb-3"
+        }), _vm._v(" "), _c("div", {
+          staticClass: "form-group"
+        }, [_c("input-container-component", {
+          attrs: {
+            label: "Imagem",
+            inputId: "inputUpdateIMAGE",
+            helpID: "helpUpdateIMAGE",
+            helpText: "Opcional. Adicione a imagem da marca (formato .png)."
+          }
+        }, [_c("img", {
+          attrs: {
+            src: "/storage/" + _vm.brandData.image,
+            width: "30",
+            height: "30"
+          }
+        }), _vm._v(" "), _c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "file",
+            id: "inputUpdateIMAGE",
+            placeholder: "Imagem",
+            "aria-describedby": "helpUpdateIMAGE"
+          },
+          on: {
+            change: function change($event) {
+              return _vm.updateImage($event);
+            }
+          }
+        })]), _vm._v("\n\n        " + _vm._s(_vm.brandData.image) + "\n      ")], 1)];
+      },
+      proxy: true
+    } : null, {
+      key: "footer",
+      fn: function fn() {
+        return [_c("button", {
+          staticClass: "btn btn-secondary",
+          attrs: {
+            type: "button",
+            "data-bs-dismiss": "modal"
+          }
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id && _vm.request_status != "success" ? _c("button", {
+          staticClass: "btn btn-success",
+          attrs: {
+            type: "button"
+          },
+          on: {
+            click: function click($event) {
+              return _vm.update();
+            }
+          }
+        }, [_vm._v("\n        Atualizar\n      ")]) : _vm._e()];
       },
       proxy: true
     }], null, true)
@@ -6880,12 +7059,17 @@ var render = function render() {
         }
       }
     }, [_vm._v("\n            Visualizar\n          ")]) : _vm._e(), _vm._v(" "), _vm.btn_update.visible ? _c("button", {
-      staticClass: "btn btn-outline-secondary btn-sm",
+      staticClass: "btn btn-outline-success btn-sm",
       attrs: {
         "data-bs-toggle": _vm.btn_update.dataToogle,
         "data-bs-target": _vm.btn_update.dataTarget
+      },
+      on: {
+        click: function click($event) {
+          return _vm.setStore(item);
+        }
       }
-    }, [_vm._v("\n            Editar\n          ")]) : _vm._e(), _vm._v(" "), _vm.btn_delete.visible ? _c("button", {
+    }, [_vm._v("\n            Atualizar\n          ")]) : _vm._e(), _vm._v(" "), _vm.btn_delete.visible ? _c("button", {
       staticClass: "btn btn-outline-danger btn-sm",
       attrs: {
         "data-bs-toggle": _vm.btn_delete.dataToogle,

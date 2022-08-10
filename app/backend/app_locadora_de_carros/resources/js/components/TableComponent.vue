@@ -48,11 +48,12 @@
             <!-- botão de update -->
             <button
               v-if="btn_update.visible"
-              class="btn btn-outline-secondary btn-sm"
+              class="btn btn-outline-success btn-sm"
               :data-bs-toggle="btn_update.dataToogle"
               :data-bs-target="btn_update.dataTarget"
+              @click="setStore(item)"
             >
-              Editar
+              Atualizar
             </button>
             <!-- botão de delete -->
             <button

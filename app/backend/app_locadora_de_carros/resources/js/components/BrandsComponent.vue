@@ -89,7 +89,7 @@
                 dataTarget: '#brandModalRead',
               }"
               :btn_update="{
-                visible: false,
+                visible: true,
                 dataToogle: 'modal',
                 dataTarget: '#brandModalUpdate',
               }"
@@ -141,7 +141,7 @@
     </div>
 
     <!-- modal de cadastro -->
-    <modal-component id="brandModalCreate" title="Adicionar Nova Marca">
+    <modal-component id="brandModalCreate" title="Criar Nova Marca">
       <!-- inserindo o alert -->
       <template v-slot:alert>
         <!-- alert que será exibido no sucesso da requisição -->
@@ -162,28 +162,27 @@
       </template>
 
       <!-- inserindo o content -->
+      <!-- em caso de sucesso na requisição, não será renderizado -->
       <template v-slot:content v-if="request_status != 'success'">
         <!-- incluindo o componente de input para o Nome-->
         <div class="form-group">
           <input-container-component
             label="Nome"
-            inputId="inputNewNAME"
-            helpID="helpNewNAME"
+            inputId="inputCreateNAME"
+            helpID="helpCreateNAME"
             helpText="Obrigatório. Informe o nome da marca."
           >
             <!-- foi utilizado o v-model (two-way-databinding) para a variável brandName -->
             <input
               type="text"
               class="form-control"
-              id="inputNewNAME"
+              id="inputCreateNAME"
               placeholder="Nome"
-              aria-describedby="helpNewNAME"
+              aria-describedby="helpCreateNAME"
               v-model="brandName"
             />
           </input-container-component>
         </div>
-
-        {{ brandName }}
 
         <!-- espaçamento entre os inputs -->
         <div class="mb-3"></div>
@@ -192,8 +191,8 @@
         <div class="form-group">
           <input-container-component
             label="Imagem"
-            inputId="inputNewIMAGE"
-            helpID="helpNewIMAGE"
+            inputId="inputCreateIMAGE"
+            helpID="helpCreateIMAGE"
             helpText="Opcional. Adicione a imagem da marca (formato .png)."
           >
             <!-- como não é possivel utilizar o v-model em inputs de tipo file,
@@ -202,15 +201,13 @@
             <input
               type="file"
               class="form-control"
-              id="inputNewIMAGE"
+              id="inputCreateIMAGE"
               placeholder="Imagem"
-              aria-describedby="helpNewIMAGE"
+              aria-describedby="helpCreateIMAGE"
               @change="getImage($event)"
             />
           </input-container-component>
         </div>
-
-        {{ brandImage }}
       </template>
 
       <!-- inserindo o footer -->
@@ -221,13 +218,14 @@
         </button>
 
         <!-- inserindo o botão de salvar -->
+        <!-- em caso de sucesso na requisição, não será renderizado -->
         <button
           v-if="request_status != 'success'"
           type="button"
           class="btn btn-primary"
           @click="create()"
         >
-          Salvar
+          Criar
         </button>
       </template>
     </modal-component>
@@ -235,86 +233,92 @@
     <!-- modal de visualização -->
     <modal-component id="brandModalRead" title="Detalhes marca">
       <!-- inserindo o content -->
-      <template v-slot:content>
-        <template v-if="brandData.id">
-          <input-container-component label="ID" inputId="inputReadID">
-            <input
-              type="text"
-              class="form-control"
-              id="inputReadID"
-              :value="brandData.id"
-              disabled
-            />
-          </input-container-component>
+      <!-- a ser renderizado somente se algum id estiver setado na store -->
+      <template v-slot:content v-if="brandData.id">
+        <!-- exibindo o id -->
+        <input-container-component label="ID" inputId="inputReadID">
+          <input
+            type="text"
+            class="form-control"
+            id="inputReadID"
+            :value="brandData.id"
+            disabled
+          />
+        </input-container-component>
 
-          <input-container-component label="Nome" inputId="inputReadNAME">
-            <input
-              type="text"
-              class="form-control"
-              id="inputReadNAME"
-              :value="brandData.name"
-              disabled
-            />
-          </input-container-component>
+        <!-- exibindo o nome -->
+        <input-container-component label="Nome" inputId="inputReadNAME">
+          <input
+            type="text"
+            class="form-control"
+            id="inputReadNAME"
+            :value="brandData.name"
+            disabled
+          />
+        </input-container-component>
 
-          <input-container-component label="Imagem">
-            <img :src="'/storage/' + brandData.image" width="30" height="30" />
-          </input-container-component>
+        <!-- exibindo a imagem -->
+        <input-container-component label="Imagem">
+          <img :src="'/storage/' + brandData.image" width="30" height="30" />
+        </input-container-component>
 
-          <input-container-component
-            label="Data de criação"
-            inputId="inputReadCREATEDAT"
-          >
-            <!-- exibindo a data formatada -->
-            <input
-              type="text"
-              class="form-control"
-              id="inputReadCREATEDAT"
-              :value="
-                new Intl.DateTimeFormat('pt-BR', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                }).format(new Date(brandData.created_at))
-              "
-              disabled
-            />
-          </input-container-component>
+        <!-- exibindo a data de criação -->
+        <input-container-component
+          label="Data de criação"
+          inputId="inputReadCREATEDAT"
+        >
+          <!-- exibindo a data formatada -->
+          <input
+            type="text"
+            class="form-control"
+            id="inputReadCREATEDAT"
+            :value="
+              new Intl.DateTimeFormat('pt-BR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              }).format(new Date(brandData.created_at))
+            "
+            disabled
+          />
+        </input-container-component>
 
-          <input-container-component
-            label="Data de atualização"
-            inputId="inputReadUPDATEDAT"
-          >
-            <!-- exibindo a data formatada -->
-            <input
-              type="text"
-              class="form-control"
-              id="inputReadUPDATEDAT"
-              :value="
-                new Intl.DateTimeFormat('pt-BR', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                }).format(new Date(brandData.updated_at))
-              "
-              disabled
-            />
-          </input-container-component>
+        <!-- exibindo a data de atualização -->
+        <input-container-component
+          label="Data de atualização"
+          inputId="inputReadUPDATEDAT"
+        >
+          <!-- exibindo a data formatada -->
+          <input
+            type="text"
+            class="form-control"
+            id="inputReadUPDATEDAT"
+            :value="
+              new Intl.DateTimeFormat('pt-BR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              }).format(new Date(brandData.updated_at))
+            "
+            disabled
+          />
+        </input-container-component>
 
-          <template v-if="brandData.types.length">
-            <input-container-component label="Modelos associados">
-              <ul v-for="(value, key) in brandData.types" :key="key">
-                <!-- se o link for diferente null, não renderiza o item -->
-                <!-- se o active for true, adiciona a classe active -->
-                <li>{{ value.name }}</li>
-              </ul>
-            </input-container-component>
-          </template>
+        <!-- se existirem modelos associados, lista-os -->
+        <template v-if="brandData.types.length">
+          <input-container-component label="Modelos associados">
+            <!-- iterando sobre o array de modelos -->
+            <ul v-for="(value, key) in brandData.types" :key="key">
+              <!-- exibindo o nome do modelo -->
+              <li>{{ value.name }}</li>
+            </ul>
+          </input-container-component>
         </template>
       </template>
 
       <!-- inserindo o footer -->
-      <template v-slot:footer>
+      <!-- a ser renderizado somente se algum id estiver setado na store -->
+      <template v-slot:footer v-if="brandData.id">
         <!-- inserindo o botão de fechar -->
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Fechar
@@ -343,26 +347,136 @@
         ></alert-component>
       </template>
       <!-- inserindo o content -->
-      <template v-slot:content v-if="request_status != 'success'">
-        <input-container-component label="ID" inputId="inputReadID">
+      <!-- a ser renderizado somente se algum id estiver setado na store -->
+      <!-- em caso de sucesso na requisição, não será renderizado -->
+      <template
+        v-slot:content
+        v-if="brandData.id && request_status != 'success'"
+      >
+        <!-- exibindo o id -->
+        <input-container-component label="ID" inputId="inputDeleteID">
           <input
             type="text"
             class="form-control"
-            id="inputReadID"
+            id="inputDeleteID"
             :value="brandData.id"
             disabled
           />
         </input-container-component>
 
-        <input-container-component label="Nome" inputId="inputReadNAME">
+        <!-- exibindo o nome -->
+        <input-container-component label="Nome" inputId="inputDeleteNAME">
           <input
             type="text"
             class="form-control"
-            id="inputReadNAME"
+            id="inputDeleteNAME"
             :value="brandData.name"
             disabled
           />
         </input-container-component>
+      </template>
+
+      <!-- inserindo o footer -->
+      <!-- a ser renderizado somente se algum id estiver setado na store -->
+      <template v-slot:footer>
+        <!-- inserindo o botão de fechar -->
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Fechar
+        </button>
+
+        <!-- inserindo o botão de remover -->
+        <!-- a ser renderizado somente se algum id estiver setado na store -->
+        <!-- em caso de sucesso na requisição, não será renderizado -->
+        <button
+          v-if="brandData.id && request_status != 'success'"
+          type="button"
+          class="btn btn-danger"
+          @click="del()"
+        >
+          Remover
+        </button>
+      </template>
+    </modal-component>
+
+    <!-- modal de atualização -->
+    <modal-component id="brandModalUpdate" title="Atualizar Marca">
+      <!-- inserindo o alert -->
+      <template v-slot:alert>
+        <!-- alert que será exibido no sucesso da requisição -->
+        <alert-component
+          type="success"
+          text="Atualização realizada com sucesso!"
+          :details="request_messages"
+          v-if="request_status == 'success'"
+        ></alert-component>
+
+        <!-- alert que será exibido no erro da requisição -->
+        <alert-component
+          type="danger"
+          text="Erro durante atualização:"
+          :details="request_messages"
+          v-if="request_status == 'error'"
+        ></alert-component>
+      </template>
+
+      <!-- inserindo o content -->
+      <!-- a ser renderizado somente se algum id estiver setado na store -->
+      <!-- em caso de sucesso na requisição, não será renderizado -->
+      <template
+        v-slot:content
+        v-if="brandData.id && request_status != 'success'"
+      >
+        <!-- incluindo o componente de input para o Nome-->
+        <div class="form-group">
+          <input-container-component
+            label="Nome"
+            inputId="inputUpdateNAME"
+            helpID="helpUpdateNAME"
+            helpText="Obrigatório. Informe o nome da marca."
+          >
+            <!-- foi utilizado o v-model (two-way-databinding) para a variável brandData.name -->
+            <input
+              type="text"
+              class="form-control"
+              id="inputUpdateNAME"
+              placeholder="Nome"
+              aria-describedby="helpUpdateNAME"
+              v-model="brandData.name"
+            />
+          </input-container-component>
+
+          {{ brandData.name }}
+        </div>
+
+        <!-- espaçamento entre os inputs -->
+        <div class="mb-3"></div>
+
+        <!-- incluindo o componente de input para a Imagem-->
+        <div class="form-group">
+          <input-container-component
+            label="Imagem"
+            inputId="inputUpdateIMAGE"
+            helpID="helpUpdateIMAGE"
+            helpText="Opcional. Adicione a imagem da marca (formato .png)."
+          >
+            <!-- exibindo a imagem -->
+            <img :src="'/storage/' + brandData.image" width="30" height="30" />
+
+            <!-- como não é possivel utilizar o v-model em inputs de tipo file,
+            utilizamos o @change para capturarmos o evento onChange do input
+            e dispararmos o método getImage() -->
+            <input
+              type="file"
+              class="form-control"
+              id="inputUpdateIMAGE"
+              placeholder="Imagem"
+              aria-describedby="helpUpdateIMAGE"
+              @change="updateImage($event)"
+            />
+          </input-container-component>
+
+          {{ brandData.image }}
+        </div>
       </template>
 
       <!-- inserindo o footer -->
@@ -372,14 +486,16 @@
           Fechar
         </button>
 
-        <!-- inserindo o botão de remover -->
+        <!-- inserindo o botão de salvar -->
+        <!-- a ser renderizado somente se algum id estiver setado na store -->
+        <!-- em caso de sucesso na requisição, não será renderizado -->
         <button
-          v-if="request_status != 'success'"
+          v-if="brandData.id && request_status != 'success'"
           type="button"
-          class="btn btn-danger"
-          @click="del()"
+          class="btn btn-success"
+          @click="update()"
         >
-          Remover
+          Atualizar
         </button>
       </template>
     </modal-component>
@@ -396,22 +512,35 @@ export default {
   data: function () {
     return {
       // inicializando as variáveis
+      // endpoint principal
       baseUrl: "http://0.0.0.0:8080/api/v1/brand",
+      // enpoint com paginação, inicia vazio e é atribuído ao clicar nos botões de paginação
       paginationUrl: "",
+      // atributo nome no formulário de criação
       brandName: "",
+      // atributo imagem no formulário de criação
       brandImage: [],
+      // status da requisição (sucess ou error)
       request_status: "",
+      // mensagens a serem exibidas nos alerts
       request_messages: [],
+      // dados completos recebidos da api
       brandsData: [],
+      // dados filtrados para exibição na listagem
       cleanData: [],
+      // atributos a serem exibidos na tabela de listagem
       brandsAttributes: {
         id: { title: "ID", type: "text" },
         name: { title: "Nome", type: "text" },
         image: { title: "Imagem", type: "image" },
       },
+      // quantidade de registros por página na listagem
       brandsPerPage: 5,
+      // atributo id no formulário de busca
       searchId: "",
+      // atributo nome no formulário de busca
       searchName: "",
+      // atributos a serem considerados na busca
       searchData: { id: "", name: "" },
     };
   },
@@ -534,8 +663,6 @@ export default {
       // obtendo a url customizada para a listagem
       let customListUrl = this.customizeListUrl();
 
-      console.log(customListUrl);
-
       // executando a requisição get
       axios
         .get(customListUrl, config)
@@ -546,9 +673,6 @@ export default {
 
           // popula o array de marcas limpo para envio ao componente table
           this.cleanData = this.clearData();
-
-          console.log(this.brandsData);
-          console.log(this.cleanData);
         })
         // em caso de erros, imprime
         .catch((errors) => {
@@ -641,6 +765,13 @@ export default {
       // popula a variável através do evento recebido
       this.brandImage = e.target.files;
     },
+
+    // método responsável por atualizar a variável brandData.image
+    updateImage(e) {
+      // popula a variável através do evento recebido
+      this.brandData.image = e.target.files;
+    },
+
     // método responsável salvar no BD
     create() {
       // definindo as configurações da requisição
@@ -661,8 +792,6 @@ export default {
         // adiciona a imagem na requisição
         formData.append("image", this.brandImage[0]);
       }
-
-      console.log(this.baseUrl, config, formData);
 
       // executando a requisição post
       axios
@@ -685,8 +814,6 @@ export default {
 
           // atualiza a lista de marcas
           this.getBrands();
-
-          console.log(response);
         })
         // em caso de erros, imprime
         .catch((errors) => {
@@ -709,7 +836,6 @@ export default {
               const [key, value] = entry;
               this.request_messages.push(value[0]);
             });
-          console.log(errors.response);
         });
     },
 
@@ -757,8 +883,6 @@ export default {
 
           // atualiza a lista de marcas
           this.getBrands();
-
-          console.log(response);
         })
         // em caso de erros, imprime
         .catch((errors) => {
@@ -771,9 +895,77 @@ export default {
           // atribui as mensagens de erro para serem utilizadas no alert
           // adicionando a mensagem geral
           this.request_messages.push(errors.response.data.msg);
-
-          console.log(errors.response);
         });
+    },
+
+    // método responsável atualizar no BD
+    update() {
+      
+      console.log(this.brandData.name, this.brandData.image);
+
+      // // definindo as configurações da requisição
+      // let config = {
+      //   headers: {
+      //     "Content-Type": "multipart/form-data",
+      //     Accept: "application/json",
+      //     Authorization: this.token,
+      //   },
+      // };
+
+      // // definindo os dados a serem inseridos no BD
+      // let formData = new FormData();
+      // // adiciona o nome na requisição
+      // formData.append("name", this.brandName);
+      // // se alguma imagem for selecionada
+      // if (this.brandImage[0]) {
+      //   // adiciona a imagem na requisição
+      //   formData.append("image", this.brandImage[0]);
+      // }
+
+      // // executando a requisição post
+      // axios
+      //   .post(this.baseUrl, formData, config)
+      //   // se houve sucesso na requisição
+      //   .then((response) => {
+      //     // atribui status de sucesso para exibir o alert
+      //     this.request_status = "success";
+
+      //     // limpando o array de erros
+      //     this.request_messages = [];
+
+      //     // atribui as mensagens de sucesso para serem utilizadas no alert
+      //     this.request_messages.push(
+      //       "ID do novo registro: " + response.data.id
+      //     );
+
+      //     // removendo o atributo de pagina
+      //     this.paginationUrl = "";
+
+      //     // atualiza a lista de marcas
+      //     this.getBrands();
+      //   })
+      //   // em caso de erros, imprime
+      //   .catch((errors) => {
+      //     // atribui status de error para exibir o alert
+      //     this.request_status = "error";
+
+      //     // limpando o array de erros
+      //     this.request_messages = [];
+
+      //     // atribui as mensagens de erro para serem utilizadas no alert
+      //     // adicionando a mensagem geral
+      //     this.request_messages.push(errors.response.data.message);
+
+      //     // adicionando as demais mensagens
+      //     // converte o objeto em array
+      //     Object.entries(errors.response.data.errors)
+      //       // executa um foreach pelo array
+      //       .forEach((entry) => {
+      //         // popula o array de mensagens que será passado para o alert
+      //         const [key, value] = entry;
+      //         this.request_messages.push(value[0]);
+      //       });
+      //   });
     },
   },
   // comportamentos automáticos após a montagem do componente
