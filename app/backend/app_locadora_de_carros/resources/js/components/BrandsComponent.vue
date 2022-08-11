@@ -148,22 +148,22 @@
         <alert-component
           type="success"
           text="Cadastro realizado com sucesso!"
-          :details="request_messages"
-          v-if="request_status == 'success'"
+          :details="$store.state.request_messages"
+          v-if="$store.state.request_status == 'success'"
         ></alert-component>
 
         <!-- alert que será exibido no erro da requisição -->
         <alert-component
           type="danger"
           text="Erro durante cadastro:"
-          :details="request_messages"
-          v-if="request_status == 'error'"
+          :details="$store.state.request_messages"
+          v-if="$store.state.request_status == 'error'"
         ></alert-component>
       </template>
 
       <!-- inserindo o content -->
       <!-- em caso de sucesso na requisição, não será renderizado -->
-      <template v-slot:content v-if="request_status != 'success'">
+      <template v-slot:content v-if="$store.state.request_status != 'success'">
         <!-- incluindo o componente de input para o Nome-->
         <div class="form-group">
           <input-container-component
@@ -172,14 +172,14 @@
             helpID="helpCreateNAME"
             helpText="Obrigatório. Informe o nome da marca."
           >
-            <!-- foi utilizado o v-model (two-way-databinding) para a variável brandName -->
+            <!-- foi utilizado o v-model (two-way-databinding) para a variável brandCreateName -->
             <input
               type="text"
               class="form-control"
               id="inputCreateNAME"
               placeholder="Nome"
               aria-describedby="helpCreateNAME"
-              v-model="brandName"
+              v-model="brandCreateName"
             />
           </input-container-component>
         </div>
@@ -220,7 +220,7 @@
         <!-- inserindo o botão de salvar -->
         <!-- em caso de sucesso na requisição, não será renderizado -->
         <button
-          v-if="request_status != 'success'"
+          v-if="$store.state.request_status != 'success'"
           type="button"
           class="btn btn-primary"
           @click="create()"
@@ -334,16 +334,16 @@
         <alert-component
           type="success"
           text="Registro removido com sucesso!"
-          :details="request_messages"
-          v-if="request_status == 'success'"
+          :details="$store.state.request_messages"
+          v-if="$store.state.request_status == 'success'"
         ></alert-component>
 
         <!-- alert que será exibido no erro da requisição -->
         <alert-component
           type="danger"
           text="Erro durante remoção:"
-          :details="request_messages"
-          v-if="request_status == 'error'"
+          :details="$store.state.request_messages"
+          v-if="$store.state.request_status == 'error'"
         ></alert-component>
       </template>
       <!-- inserindo o content -->
@@ -351,7 +351,7 @@
       <!-- em caso de sucesso na requisição, não será renderizado -->
       <template
         v-slot:content
-        v-if="brandData.id && request_status != 'success'"
+        v-if="brandData.id && $store.state.request_status != 'success'"
       >
         <!-- exibindo o id -->
         <input-container-component label="ID" inputId="inputDeleteID">
@@ -388,7 +388,7 @@
         <!-- a ser renderizado somente se algum id estiver setado na store -->
         <!-- em caso de sucesso na requisição, não será renderizado -->
         <button
-          v-if="brandData.id && request_status != 'success'"
+          v-if="brandData.id && $store.state.request_status != 'success'"
           type="button"
           class="btn btn-danger"
           @click="del()"
@@ -406,16 +406,16 @@
         <alert-component
           type="success"
           text="Atualização realizada com sucesso!"
-          :details="request_messages"
-          v-if="request_status == 'success'"
+          :details="$store.state.request_messages"
+          v-if="$store.state.request_status == 'success'"
         ></alert-component>
 
         <!-- alert que será exibido no erro da requisição -->
         <alert-component
           type="danger"
           text="Erro durante atualização:"
-          :details="request_messages"
-          v-if="request_status == 'error'"
+          :details="$store.state.request_messages"
+          v-if="$store.state.request_status == 'error'"
         ></alert-component>
       </template>
 
@@ -424,7 +424,7 @@
       <!-- em caso de sucesso na requisição, não será renderizado -->
       <template
         v-slot:content
-        v-if="brandData.id && request_status != 'success'"
+        v-if="brandData.id && $store.state.request_status != 'success'"
       >
         <!-- incluindo o componente de input para o Nome-->
         <div class="form-group">
@@ -444,8 +444,6 @@
               v-model="brandData.name"
             />
           </input-container-component>
-
-          {{ brandData.name }}
         </div>
 
         <!-- espaçamento entre os inputs -->
@@ -474,8 +472,6 @@
               @change="updateImage($event)"
             />
           </input-container-component>
-
-          {{ brandData.image }}
         </div>
       </template>
 
@@ -490,7 +486,7 @@
         <!-- a ser renderizado somente se algum id estiver setado na store -->
         <!-- em caso de sucesso na requisição, não será renderizado -->
         <button
-          v-if="brandData.id && request_status != 'success'"
+          v-if="brandData.id && $store.state.request_status != 'success'"
           type="button"
           class="btn btn-success"
           @click="update()"
@@ -517,13 +513,11 @@ export default {
       // enpoint com paginação, inicia vazio e é atribuído ao clicar nos botões de paginação
       paginationUrl: "",
       // atributo nome no formulário de criação
-      brandName: "",
+      brandCreateName: "",
       // atributo imagem no formulário de criação
-      brandImage: [],
-      // status da requisição (sucess ou error)
-      request_status: "",
-      // mensagens a serem exibidas nos alerts
-      request_messages: [],
+      brandCreateImage: [],
+      // atributo imagem no formulário de atualização
+      brandUpdateImage: [],
       // dados completos recebidos da api
       brandsData: [],
       // dados filtrados para exibição na listagem
@@ -749,27 +743,29 @@ export default {
     // método que limpa o formulário de create
     cleanCreateForm() {
       // limpando o formulário
-      this.brandName = "";
-      this.brandImage = [];
+      this.brandCreateName = "";
+      this.brandCreateImage = [];
+
+      // limpando o status e array de mensagens da store
       this.cleanMessages();
     },
 
-    // método que limpa o status e array de mensagens
+    // método que limpa o status e array de mensagens da store
     cleanMessages() {
-      this.request_status = "";
-      this.request_messages = [];
+      this.$store.state.request_status = "";
+      this.$store.state.request_messages = [];
     },
 
-    // método responsável por popular a variável brandImage
+    // método responsável por popular a variável brandCreateImage
     getImage(e) {
       // popula a variável através do evento recebido
-      this.brandImage = e.target.files;
+      this.brandCreateImage = e.target.files;
     },
 
-    // método responsável por atualizar a variável brandData.image
+    // método responsável por atualizar a variável brandUpdateImage
     updateImage(e) {
       // popula a variável através do evento recebido
-      this.brandData.image = e.target.files;
+      this.brandUpdateImage = e.target.files;
     },
 
     // método responsável salvar no BD
@@ -786,11 +782,11 @@ export default {
       // definindo os dados a serem inseridos no BD
       let formData = new FormData();
       // adiciona o nome na requisição
-      formData.append("name", this.brandName);
+      formData.append("name", this.brandCreateName);
       // se alguma imagem for selecionada
-      if (this.brandImage[0]) {
+      if (this.brandCreateImage[0]) {
         // adiciona a imagem na requisição
-        formData.append("image", this.brandImage[0]);
+        formData.append("image", this.brandCreateImage[0]);
       }
 
       // executando a requisição post
@@ -799,13 +795,13 @@ export default {
         // se houve sucesso na requisição
         .then((response) => {
           // atribui status de sucesso para exibir o alert
-          this.request_status = "success";
+          this.$store.state.request_status = "success";
 
           // limpando o array de erros
-          this.request_messages = [];
+          this.$store.state.request_messages = [];
 
           // atribui as mensagens de sucesso para serem utilizadas no alert
-          this.request_messages.push(
+          this.$store.state.request_messages.push(
             "ID do novo registro: " + response.data.id
           );
 
@@ -818,14 +814,14 @@ export default {
         // em caso de erros, imprime
         .catch((errors) => {
           // atribui status de error para exibir o alert
-          this.request_status = "error";
+          this.$store.state.request_status = "error";
 
           // limpando o array de erros
-          this.request_messages = [];
+          this.$store.state.request_messages = [];
 
           // atribui as mensagens de erro para serem utilizadas no alert
           // adicionando a mensagem geral
-          this.request_messages.push(errors.response.data.message);
+          this.$store.state.request_messages.push(errors.response.data.message);
 
           // adicionando as demais mensagens
           // converte o objeto em array
@@ -834,7 +830,7 @@ export default {
             .forEach((entry) => {
               // popula o array de mensagens que será passado para o alert
               const [key, value] = entry;
-              this.request_messages.push(value[0]);
+              this.$store.state.request_messages.push(value[0]);
             });
         });
     },
@@ -862,7 +858,7 @@ export default {
 
       let brandId = this.$store.state.selectedBrand;
 
-      // obtendo a url customizada para a remoção
+      // obtendo a url customizada para a atualização
       let url = this.baseUrl + "/" + brandId;
 
       // executando a requisição post
@@ -871,10 +867,10 @@ export default {
         // se houve sucesso na requisição
         .then((response) => {
           // atribui status de sucesso para exibir o alert
-          this.request_status = "success";
+          this.$store.state.request_status = "success";
 
           // atribui as mensagens de sucesso para serem utilizadas no alert
-          this.request_messages.push(
+          this.$store.state.request_messages.push(
             "Registro " + brandId + " removido com sucesso!"
           );
 
@@ -887,85 +883,92 @@ export default {
         // em caso de erros, imprime
         .catch((errors) => {
           // atribui status de error para exibir o alert
-          this.request_status = "error";
+          this.$store.state.request_status = "error";
 
           // limpando o array de erros
-          this.request_messages = [];
+          this.$store.state.request_messages = [];
 
           // atribui as mensagens de erro para serem utilizadas no alert
           // adicionando a mensagem geral
-          this.request_messages.push(errors.response.data.msg);
+          this.$store.state.request_messages.push(errors.response.data.msg);
         });
     },
 
     // método responsável atualizar no BD
     update() {
-      
-      console.log(this.brandData.name, this.brandData.image);
+      // definindo as configurações da requisição
+      let config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Accept: "application/json",
+          Authorization: this.token,
+        },
+      };
 
-      // // definindo as configurações da requisição
-      // let config = {
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //     Accept: "application/json",
-      //     Authorization: this.token,
-      //   },
-      // };
+      // definindo os dados a serem inseridos no BD
+      let formData = new FormData();
+      // adiciona o nome na requisição
+      formData.append("name", this.brandData.name);
+      // se alguma imagem for selecionada
+      if (this.brandUpdateImage[0]) {
+        // adiciona a imagem na requisição
+        formData.append("image", this.brandUpdateImage[0]);
+      }
+      // alterando o método para que o Laravel entenda que trata-se de patch
+      formData.append("_method", "patch");
 
-      // // definindo os dados a serem inseridos no BD
-      // let formData = new FormData();
-      // // adiciona o nome na requisição
-      // formData.append("name", this.brandName);
-      // // se alguma imagem for selecionada
-      // if (this.brandImage[0]) {
-      //   // adiciona a imagem na requisição
-      //   formData.append("image", this.brandImage[0]);
-      // }
+      let brandId = this.$store.state.selectedBrand;
 
-      // // executando a requisição post
-      // axios
-      //   .post(this.baseUrl, formData, config)
-      //   // se houve sucesso na requisição
-      //   .then((response) => {
-      //     // atribui status de sucesso para exibir o alert
-      //     this.request_status = "success";
+      // obtendo a url customizada para a atualização
+      let url = this.baseUrl + "/" + brandId;
 
-      //     // limpando o array de erros
-      //     this.request_messages = [];
+      // executando a requisição post
+      axios
+        .post(url, formData, config)
+        // se houve sucesso na requisição
+        .then((response) => {
+          // atribui status de sucesso para exibir o alert
+          this.$store.state.request_status = "success";
 
-      //     // atribui as mensagens de sucesso para serem utilizadas no alert
-      //     this.request_messages.push(
-      //       "ID do novo registro: " + response.data.id
-      //     );
+          // limpando o array de erros
+          this.$store.state.request_messages = [];
 
-      //     // removendo o atributo de pagina
-      //     this.paginationUrl = "";
+          // atribui as mensagens de sucesso para serem utilizadas no alert
+          this.$store.state.request_messages.push(
+            "Registro: " + response.data.id + " atualizado com sucesso!"
+          );
 
-      //     // atualiza a lista de marcas
-      //     this.getBrands();
-      //   })
-      //   // em caso de erros, imprime
-      //   .catch((errors) => {
-      //     // atribui status de error para exibir o alert
-      //     this.request_status = "error";
+          // removendo o atributo de pagina
+          this.paginationUrl = "";
 
-      //     // limpando o array de erros
-      //     this.request_messages = [];
+          // limpando a variável de imagem
+          this.brandUpdateImage = [];
 
-      //     // atribui as mensagens de erro para serem utilizadas no alert
-      //     // adicionando a mensagem geral
-      //     this.request_messages.push(errors.response.data.message);
+          // atualiza a lista de marcas
+          this.getBrands();
+        })
+        // em caso de erros, imprime
+        .catch((errors) => {
+          // atribui status de error para exibir o alert
+          this.$store.state.request_status = "error";
 
-      //     // adicionando as demais mensagens
-      //     // converte o objeto em array
-      //     Object.entries(errors.response.data.errors)
-      //       // executa um foreach pelo array
-      //       .forEach((entry) => {
-      //         // popula o array de mensagens que será passado para o alert
-      //         const [key, value] = entry;
-      //         this.request_messages.push(value[0]);
-      //       });
-      //   });
+          // limpando o array de erros
+          this.$store.state.request_messages = [];
+
+          // atribui as mensagens de erro para serem utilizadas no alert
+          // adicionando a mensagem geral
+          this.$store.state.request_messages.push(errors.response.data.message);
+
+          // adicionando as demais mensagens
+          // converte o objeto em array
+          Object.entries(errors.response.data.errors)
+            // executa um foreach pelo array
+            .forEach((entry) => {
+              // popula o array de mensagens que será passado para o alert
+              const [key, value] = entry;
+              this.$store.state.request_messages.push(value[0]);
+            });
+        });
     },
   },
   // comportamentos automáticos após a montagem do componente

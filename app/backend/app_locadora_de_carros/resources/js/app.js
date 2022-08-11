@@ -18,6 +18,10 @@ const store = new Vuex.Store({
     state: {
         // atributos globais da aplicação, acessíveis a todos os componentes
         selectedBrand: {},
+        // status da requisição (sucess ou error)
+        request_status: "",
+        // mensagens a serem exibidas nos alerts
+        request_messages: [],
     },
 });
 

@@ -90,14 +90,34 @@ export default {
 
   // comportamentos do componente
   methods: {
+    // método que gera uma chave aleatória
     randomKey() {
       return (
         new Date().getTime() + Math.floor(Math.random() * 10000).toString()
       );
     },
 
+    // método que atualiza o id da marca selecionada na store
     setStore(obj) {
+      // atualizando a store
       this.$store.state.selectedBrand = obj.id;
+
+      // limpando o status e array de mensagens da store
+      this.cleanMessages();
+    },
+
+    // método que limpa o status e array de mensagens da store
+    cleanMessages() {
+      this.$store.state.request_status = "";
+      this.$store.state.request_messages = [];
+    },
+  },
+
+  // filtros
+  filters: {
+
+    formatDateTime(){
+
     },
   },
 };

@@ -5323,13 +5323,11 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // enpoint com paginação, inicia vazio e é atribuído ao clicar nos botões de paginação
       paginationUrl: "",
       // atributo nome no formulário de criação
-      brandName: "",
+      brandCreateName: "",
       // atributo imagem no formulário de criação
-      brandImage: [],
-      // status da requisição (sucess ou error)
-      request_status: "",
-      // mensagens a serem exibidas nos alerts
-      request_messages: [],
+      brandCreateImage: [],
+      // atributo imagem no formulário de atualização
+      brandUpdateImage: [],
       // dados completos recebidos da api
       brandsData: [],
       // dados filtrados para exibição na listagem
@@ -5527,24 +5525,25 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     // método que limpa o formulário de create
     cleanCreateForm: function cleanCreateForm() {
       // limpando o formulário
-      this.brandName = "";
-      this.brandImage = [];
+      this.brandCreateName = "";
+      this.brandCreateImage = []; // limpando o status e array de mensagens da store
+
       this.cleanMessages();
     },
-    // método que limpa o status e array de mensagens
+    // método que limpa o status e array de mensagens da store
     cleanMessages: function cleanMessages() {
-      this.request_status = "";
-      this.request_messages = [];
+      this.$store.state.request_status = "";
+      this.$store.state.request_messages = [];
     },
-    // método responsável por popular a variável brandImage
+    // método responsável por popular a variável brandCreateImage
     getImage: function getImage(e) {
       // popula a variável através do evento recebido
-      this.brandImage = e.target.files;
+      this.brandCreateImage = e.target.files;
     },
-    // método responsável por atualizar a variável brandData.image
+    // método responsável por atualizar a variável brandUpdateImage
     updateImage: function updateImage(e) {
       // popula a variável através do evento recebido
-      this.brandData.image = e.target.files;
+      this.brandUpdateImage = e.target.files;
     },
     // método responsável salvar no BD
     create: function create() {
@@ -5561,22 +5560,22 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
       var formData = new FormData(); // adiciona o nome na requisição
 
-      formData.append("name", this.brandName); // se alguma imagem for selecionada
+      formData.append("name", this.brandCreateName); // se alguma imagem for selecionada
 
-      if (this.brandImage[0]) {
+      if (this.brandCreateImage[0]) {
         // adiciona a imagem na requisição
-        formData.append("image", this.brandImage[0]);
+        formData.append("image", this.brandCreateImage[0]);
       } // executando a requisição post
 
 
       axios.post(this.baseUrl, formData, config) // se houve sucesso na requisição
       .then(function (response) {
         // atribui status de sucesso para exibir o alert
-        _this2.request_status = "success"; // limpando o array de erros
+        _this2.$store.state.request_status = "success"; // limpando o array de erros
 
-        _this2.request_messages = []; // atribui as mensagens de sucesso para serem utilizadas no alert
+        _this2.$store.state.request_messages = []; // atribui as mensagens de sucesso para serem utilizadas no alert
 
-        _this2.request_messages.push("ID do novo registro: " + response.data.id); // removendo o atributo de pagina
+        _this2.$store.state.request_messages.push("ID do novo registro: " + response.data.id); // removendo o atributo de pagina
 
 
         _this2.paginationUrl = ""; // atualiza a lista de marcas
@@ -5585,12 +5584,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         // atribui status de error para exibir o alert
-        _this2.request_status = "error"; // limpando o array de erros
+        _this2.$store.state.request_status = "error"; // limpando o array de erros
 
-        _this2.request_messages = []; // atribui as mensagens de erro para serem utilizadas no alert
+        _this2.$store.state.request_messages = []; // atribui as mensagens de erro para serem utilizadas no alert
         // adicionando a mensagem geral
 
-        _this2.request_messages.push(errors.response.data.message); // adicionando as demais mensagens
+        _this2.$store.state.request_messages.push(errors.response.data.message); // adicionando as demais mensagens
         // converte o objeto em array
 
 
@@ -5601,7 +5600,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
               key = _entry2[0],
               value = _entry2[1];
 
-          _this2.request_messages.push(value[0]);
+          _this2.$store.state.request_messages.push(value[0]);
         });
       });
     },
@@ -5624,16 +5623,16 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       var formData = new FormData(); // alterando o método para que o Laravel entenda que trata-se de delete
 
       formData.append("_method", "delete");
-      var brandId = this.$store.state.selectedBrand; // obtendo a url customizada para a remoção
+      var brandId = this.$store.state.selectedBrand; // obtendo a url customizada para a atualização
 
       var url = this.baseUrl + "/" + brandId; // executando a requisição post
 
       axios.post(url, formData, config) // se houve sucesso na requisição
       .then(function (response) {
         // atribui status de sucesso para exibir o alert
-        _this3.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
+        _this3.$store.state.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
 
-        _this3.request_messages.push("Registro " + brandId + " removido com sucesso!"); // removendo o atributo de pagina
+        _this3.$store.state.request_messages.push("Registro " + brandId + " removido com sucesso!"); // removendo o atributo de pagina
 
 
         _this3.paginationUrl = ""; // atualiza a lista de marcas
@@ -5642,70 +5641,79 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       }) // em caso de erros, imprime
       ["catch"](function (errors) {
         // atribui status de error para exibir o alert
-        _this3.request_status = "error"; // limpando o array de erros
+        _this3.$store.state.request_status = "error"; // limpando o array de erros
 
-        _this3.request_messages = []; // atribui as mensagens de erro para serem utilizadas no alert
+        _this3.$store.state.request_messages = []; // atribui as mensagens de erro para serem utilizadas no alert
         // adicionando a mensagem geral
 
-        _this3.request_messages.push(errors.response.data.msg);
+        _this3.$store.state.request_messages.push(errors.response.data.msg);
       });
     },
     // método responsável atualizar no BD
     update: function update() {
-      console.log(this.brandData.name, this.brandData.image); // // definindo as configurações da requisição
-      // let config = {
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //     Accept: "application/json",
-      //     Authorization: this.token,
-      //   },
-      // };
-      // // definindo os dados a serem inseridos no BD
-      // let formData = new FormData();
-      // // adiciona o nome na requisição
-      // formData.append("name", this.brandName);
-      // // se alguma imagem for selecionada
-      // if (this.brandImage[0]) {
-      //   // adiciona a imagem na requisição
-      //   formData.append("image", this.brandImage[0]);
-      // }
-      // // executando a requisição post
-      // axios
-      //   .post(this.baseUrl, formData, config)
-      //   // se houve sucesso na requisição
-      //   .then((response) => {
-      //     // atribui status de sucesso para exibir o alert
-      //     this.request_status = "success";
-      //     // limpando o array de erros
-      //     this.request_messages = [];
-      //     // atribui as mensagens de sucesso para serem utilizadas no alert
-      //     this.request_messages.push(
-      //       "ID do novo registro: " + response.data.id
-      //     );
-      //     // removendo o atributo de pagina
-      //     this.paginationUrl = "";
-      //     // atualiza a lista de marcas
-      //     this.getBrands();
-      //   })
-      //   // em caso de erros, imprime
-      //   .catch((errors) => {
-      //     // atribui status de error para exibir o alert
-      //     this.request_status = "error";
-      //     // limpando o array de erros
-      //     this.request_messages = [];
-      //     // atribui as mensagens de erro para serem utilizadas no alert
-      //     // adicionando a mensagem geral
-      //     this.request_messages.push(errors.response.data.message);
-      //     // adicionando as demais mensagens
-      //     // converte o objeto em array
-      //     Object.entries(errors.response.data.errors)
-      //       // executa um foreach pelo array
-      //       .forEach((entry) => {
-      //         // popula o array de mensagens que será passado para o alert
-      //         const [key, value] = entry;
-      //         this.request_messages.push(value[0]);
-      //       });
-      //   });
+      var _this4 = this;
+
+      // definindo as configurações da requisição
+      var config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Accept: "application/json",
+          Authorization: this.token
+        }
+      }; // definindo os dados a serem inseridos no BD
+
+      var formData = new FormData(); // adiciona o nome na requisição
+
+      formData.append("name", this.brandData.name); // se alguma imagem for selecionada
+
+      if (this.brandUpdateImage[0]) {
+        // adiciona a imagem na requisição
+        formData.append("image", this.brandUpdateImage[0]);
+      } // alterando o método para que o Laravel entenda que trata-se de patch
+
+
+      formData.append("_method", "patch");
+      var brandId = this.$store.state.selectedBrand; // obtendo a url customizada para a atualização
+
+      var url = this.baseUrl + "/" + brandId; // executando a requisição post
+
+      axios.post(url, formData, config) // se houve sucesso na requisição
+      .then(function (response) {
+        // atribui status de sucesso para exibir o alert
+        _this4.$store.state.request_status = "success"; // limpando o array de erros
+
+        _this4.$store.state.request_messages = []; // atribui as mensagens de sucesso para serem utilizadas no alert
+
+        _this4.$store.state.request_messages.push("Registro: " + response.data.id + " atualizado com sucesso!"); // removendo o atributo de pagina
+
+
+        _this4.paginationUrl = ""; // limpando a variável de imagem
+
+        _this4.brandUpdateImage = []; // atualiza a lista de marcas
+
+        _this4.getBrands();
+      }) // em caso de erros, imprime
+      ["catch"](function (errors) {
+        // atribui status de error para exibir o alert
+        _this4.$store.state.request_status = "error"; // limpando o array de erros
+
+        _this4.$store.state.request_messages = []; // atribui as mensagens de erro para serem utilizadas no alert
+        // adicionando a mensagem geral
+
+        _this4.$store.state.request_messages.push(errors.response.data.message); // adicionando as demais mensagens
+        // converte o objeto em array
+
+
+        Object.entries(errors.response.data.errors) // executa um foreach pelo array
+        .forEach(function (entry) {
+          // popula o array de mensagens que será passado para o alert
+          var _entry3 = _slicedToArray(entry, 2),
+              key = _entry3[0],
+              value = _entry3[1];
+
+          _this4.$store.state.request_messages.push(value[0]);
+        });
+      });
     }
   },
   // comportamentos automáticos após a montagem do componente
@@ -5953,12 +5961,26 @@ __webpack_require__.r(__webpack_exports__);
   computed: {},
   // comportamentos do componente
   methods: {
+    // método que gera uma chave aleatória
     randomKey: function randomKey() {
       return new Date().getTime() + Math.floor(Math.random() * 10000).toString();
     },
+    // método que atualiza o id da marca selecionada na store
     setStore: function setStore(obj) {
-      this.$store.state.selectedBrand = obj.id;
+      // atualizando a store
+      this.$store.state.selectedBrand = obj.id; // limpando o status e array de mensagens da store
+
+      this.cleanMessages();
+    },
+    // método que limpa o status e array de mensagens da store
+    cleanMessages: function cleanMessages() {
+      this.$store.state.request_status = "";
+      this.$store.state.request_messages = [];
     }
+  },
+  // filtros
+  filters: {
+    formatDateTime: function formatDateTime() {}
   }
 });
 
@@ -6189,22 +6211,22 @@ var render = function render() {
     scopedSlots: _vm._u([{
       key: "alert",
       fn: function fn() {
-        return [_vm.request_status == "success" ? _c("alert-component", {
+        return [_vm.$store.state.request_status == "success" ? _c("alert-component", {
           attrs: {
             type: "success",
             text: "Cadastro realizado com sucesso!",
-            details: _vm.request_messages
+            details: _vm.$store.state.request_messages
           }
-        }) : _vm._e(), _vm._v(" "), _vm.request_status == "error" ? _c("alert-component", {
+        }) : _vm._e(), _vm._v(" "), _vm.$store.state.request_status == "error" ? _c("alert-component", {
           attrs: {
             type: "danger",
             text: "Erro durante cadastro:",
-            details: _vm.request_messages
+            details: _vm.$store.state.request_messages
           }
         }) : _vm._e()];
       },
       proxy: true
-    }, _vm.request_status != "success" ? {
+    }, _vm.$store.state.request_status != "success" ? {
       key: "content",
       fn: function fn() {
         return [_c("div", {
@@ -6220,8 +6242,8 @@ var render = function render() {
           directives: [{
             name: "model",
             rawName: "v-model",
-            value: _vm.brandName,
-            expression: "brandName"
+            value: _vm.brandCreateName,
+            expression: "brandCreateName"
           }],
           staticClass: "form-control",
           attrs: {
@@ -6231,12 +6253,12 @@ var render = function render() {
             "aria-describedby": "helpCreateNAME"
           },
           domProps: {
-            value: _vm.brandName
+            value: _vm.brandCreateName
           },
           on: {
             input: function input($event) {
               if ($event.target.composing) return;
-              _vm.brandName = $event.target.value;
+              _vm.brandCreateName = $event.target.value;
             }
           }
         })])], 1), _vm._v(" "), _c("div", {
@@ -6275,7 +6297,7 @@ var render = function render() {
             type: "button",
             "data-bs-dismiss": "modal"
           }
-        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.request_status != "success" ? _c("button", {
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.$store.state.request_status != "success" ? _c("button", {
           staticClass: "btn btn-primary",
           attrs: {
             type: "button"
@@ -6407,22 +6429,22 @@ var render = function render() {
     scopedSlots: _vm._u([{
       key: "alert",
       fn: function fn() {
-        return [_vm.request_status == "success" ? _c("alert-component", {
+        return [_vm.$store.state.request_status == "success" ? _c("alert-component", {
           attrs: {
             type: "success",
             text: "Registro removido com sucesso!",
-            details: _vm.request_messages
+            details: _vm.$store.state.request_messages
           }
-        }) : _vm._e(), _vm._v(" "), _vm.request_status == "error" ? _c("alert-component", {
+        }) : _vm._e(), _vm._v(" "), _vm.$store.state.request_status == "error" ? _c("alert-component", {
           attrs: {
             type: "danger",
             text: "Erro durante remoção:",
-            details: _vm.request_messages
+            details: _vm.$store.state.request_messages
           }
         }) : _vm._e()];
       },
       proxy: true
-    }, _vm.brandData.id && _vm.request_status != "success" ? {
+    }, _vm.brandData.id && _vm.$store.state.request_status != "success" ? {
       key: "content",
       fn: function fn() {
         return [_c("input-container-component", {
@@ -6467,7 +6489,7 @@ var render = function render() {
             type: "button",
             "data-bs-dismiss": "modal"
           }
-        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id && _vm.request_status != "success" ? _c("button", {
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id && _vm.$store.state.request_status != "success" ? _c("button", {
           staticClass: "btn btn-danger",
           attrs: {
             type: "button"
@@ -6489,22 +6511,22 @@ var render = function render() {
     scopedSlots: _vm._u([{
       key: "alert",
       fn: function fn() {
-        return [_vm.request_status == "success" ? _c("alert-component", {
+        return [_vm.$store.state.request_status == "success" ? _c("alert-component", {
           attrs: {
             type: "success",
             text: "Atualização realizada com sucesso!",
-            details: _vm.request_messages
+            details: _vm.$store.state.request_messages
           }
-        }) : _vm._e(), _vm._v(" "), _vm.request_status == "error" ? _c("alert-component", {
+        }) : _vm._e(), _vm._v(" "), _vm.$store.state.request_status == "error" ? _c("alert-component", {
           attrs: {
             type: "danger",
             text: "Erro durante atualização:",
-            details: _vm.request_messages
+            details: _vm.$store.state.request_messages
           }
         }) : _vm._e()];
       },
       proxy: true
-    }, _vm.brandData.id && _vm.request_status != "success" ? {
+    }, _vm.brandData.id && _vm.$store.state.request_status != "success" ? {
       key: "content",
       fn: function fn() {
         return [_c("div", {
@@ -6540,7 +6562,7 @@ var render = function render() {
               _vm.$set(_vm.brandData, "name", $event.target.value);
             }
           }
-        })]), _vm._v("\n\n        " + _vm._s(_vm.brandData.name) + "\n      ")], 1), _vm._v(" "), _c("div", {
+        })])], 1), _vm._v(" "), _c("div", {
           staticClass: "mb-3"
         }), _vm._v(" "), _c("div", {
           staticClass: "form-group"
@@ -6570,7 +6592,7 @@ var render = function render() {
               return _vm.updateImage($event);
             }
           }
-        })]), _vm._v("\n\n        " + _vm._s(_vm.brandData.image) + "\n      ")], 1)];
+        })])], 1)];
       },
       proxy: true
     } : null, {
@@ -6582,7 +6604,7 @@ var render = function render() {
             type: "button",
             "data-bs-dismiss": "modal"
           }
-        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id && _vm.request_status != "success" ? _c("button", {
+        }, [_vm._v("\n        Fechar\n      ")]), _vm._v(" "), _vm.brandData.id && _vm.$store.state.request_status != "success" ? _c("button", {
           staticClass: "btn btn-success",
           attrs: {
             type: "button"
@@ -7116,7 +7138,11 @@ vue__WEBPACK_IMPORTED_MODULE_0__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_1_
 var store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
   state: {
     // atributos globais da aplicação, acessíveis a todos os componentes
-    selectedBrand: {}
+    selectedBrand: {},
+    // status da requisição (sucess ou error)
+    request_status: "",
+    // mensagens a serem exibidas nos alerts
+    request_messages: []
   }
 });
 /**
