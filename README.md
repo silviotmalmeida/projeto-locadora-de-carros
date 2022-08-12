@@ -2,7 +2,7 @@
 
 ## Projeto construído durante o curso "Desenvolvimento Web Avançado 2022 com PHP, Laravel e Vue.JS" do professor Jorge Sant Ana.
 
-Trata-se da implementação de um sistema de locadora de carros para exemplificar a utilização do recurso de API REST do Laravel.
+Trata-se da implementação de um sistema de locadora de carros para exemplificar a utilização do recurso de API REST do Laravel. O frontend foi desenvolvido com Vue.js.
 
 O projeto encontra-se dockerizado para facilitar a implantação. As orientações para execução estão listadas abaixo:
 
@@ -12,7 +12,7 @@ O projeto encontra-se dockerizado para facilitar a implantação. As orientaçõ
 
 - Para instalar as dependências do projeto utiliza-se o comando "sudo ./openTerminal.sh" e "npm install";
 
-- Para compilar os arquivos do frontend do projeto utiliza-se o comando "sudo ./openTerminal.sh" e "npm run dev";
+- Para compilar os arquivos do frontend do projeto utiliza-se o comando "sudo ./openTerminal.sh", navegar até a pasta do projeto (cd /root/app/app_locadora_de_carros) e executar "npm run dev";
 
 - Para compilar em tempo-real os arquivos do frontend do projeto utiliza-se o comando "sudo ./openTerminal.sh" e "npm run watch";
 
@@ -22,15 +22,11 @@ O projeto encontra-se dockerizado para facilitar a implantação. As orientaçõ
 
 - Para iniciar o servidor utiliza-se o comando "sudo ./runServer.sh";
 
-- O sistema estará disponível na URL "0.0.0.0:8080/task";
-
-- Para iniciar o mailhog(servidor smtp), em outro terminal, utiliza-se o comando "sudo ./runMailhog.sh";
-
-- O Mailhog estará disponível na URL "0.0.0.0:8025";
+- O sistema estará disponível na URL "0.0.0.0:8080";
 
 - O dados para acesso da Área Restrita são:
-    - Email: usuario1@email.com (existem as contas dos usuarios de 1 a 9)
-    - Senha: 12345678
+    - Email: user@email.com
+    - Senha: 123456789
 
 - Para encerrar a execução utiliza-se o comando "sudo ./stopContainers.sh";
 

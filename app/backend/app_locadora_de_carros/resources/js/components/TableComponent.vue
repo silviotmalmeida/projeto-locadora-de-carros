@@ -30,6 +30,10 @@
             <template v-else-if="attributes[key].type === 'text'">{{
               value
             }}</template>
+            <!-- se o tipo do atributo for datetime, imprime a data formatada com filtro -->
+            <template v-else-if="attributes[key].type === 'datetime'">{{
+              value | formatDateTime
+            }}</template>
           </td>
           <!-- a coluna de botões só será desenhada caso algum botão exista -->
           <td
@@ -110,14 +114,6 @@ export default {
     cleanMessages() {
       this.$store.state.request_status = "";
       this.$store.state.request_messages = [];
-    },
-  },
-
-  // filtros
-  filters: {
-
-    formatDateTime(){
-
     },
   },
 };

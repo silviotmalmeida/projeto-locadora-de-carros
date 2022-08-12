@@ -84,6 +84,22 @@ Vue.component(
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+// criando um filtro de formatação global para converter o datetime
+// para o formato dd/mm/aaaa hh:mm
+Vue.filter("formatDateTime", function (value) {
+    // se não foi passado nenhum valor, retorna vazio
+    if (!value) return "";
+
+    // formatando como dd/mm/aaaa hh:mm
+    return new Intl.DateTimeFormat("pt-BR", {
+        day: "numeric",
+        month: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+    }).format(new Date(value));
+});
+
 const app = new Vue({
     el: "#app",
 

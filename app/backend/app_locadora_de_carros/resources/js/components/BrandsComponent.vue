@@ -267,18 +267,12 @@
           label="Data de criação"
           inputId="inputReadCREATEDAT"
         >
-          <!-- exibindo a data formatada -->
+          <!-- exibindo a data formatada com filtro -->
           <input
             type="text"
             class="form-control"
             id="inputReadCREATEDAT"
-            :value="
-              new Intl.DateTimeFormat('pt-BR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              }).format(new Date(brandData.created_at))
-            "
+            :value="brandData.created_at | formatDateTime"
             disabled
           />
         </input-container-component>
@@ -288,18 +282,12 @@
           label="Data de atualização"
           inputId="inputReadUPDATEDAT"
         >
-          <!-- exibindo a data formatada -->
+          <!-- exibindo a data formatada com filtro -->
           <input
             type="text"
             class="form-control"
             id="inputReadUPDATEDAT"
-            :value="
-              new Intl.DateTimeFormat('pt-BR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              }).format(new Date(brandData.updated_at))
-            "
+            :value="brandData.updated_at | formatDateTime"
             disabled
           />
         </input-container-component>
@@ -527,6 +515,7 @@ export default {
         id: { title: "ID", type: "text" },
         name: { title: "Nome", type: "text" },
         image: { title: "Imagem", type: "image" },
+        updated_at: { title: "Última atualização", type: "datetime" },
       },
       // quantidade de registros por página na listagem
       brandsPerPage: 5,
@@ -541,27 +530,6 @@ export default {
 
   // propriedades computadas do componente
   computed: {
-    // token de autorização
-    token() {
-      // obtendo o token através dos cookies para anexá-lo explicitamento no
-      // header das requisições
-      let token = document.cookie
-        // removendo os espaços
-        .replace(/\s/g, "")
-        // separando os cookies
-        .split(";")
-        // encontrando o token de autorização
-        .find((key) => {
-          return key.startsWith("token=");
-        });
-      // obtendo o corpo do token
-      token = token.split("=")[1];
-      // incluindo o prefixo 'Bearer ' ao token
-      token = "Bearer " + token;
-
-      return token;
-    },
-
     // informações filtradas da marca referente ao id armazenado na store
     // sempre que a store é atualizada, esta variável irá acompanhar
     brandData() {
@@ -577,11 +545,6 @@ export default {
     // método que gera a url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
     // bem como na definição da paginação
     customizeListUrl() {
-      // obtendo a lista de atributos separada por vírgulas
-      let atr_brand = Object.keys(this.brandsAttributes).reduce(
-        (p, n) => p + "," + n
-      );
-
       // inicializando a url customizada
       // se a url de paginação estiver definida, utiliza a mesma
       // senão utiliza a url base
@@ -596,10 +559,8 @@ export default {
         ? (customListUrl += "&")
         : (customListUrl += "?");
 
-      // incrementando a url base com os parâmetros de filtro e quantidades de item por página
-      customListUrl +=
-        // "atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
-        "&paginate=" + this.brandsPerPage;
+      // incrementando a url base com a quantidade de itens por página
+      customListUrl += "&paginate=" + this.brandsPerPage;
 
       // inicializando a variável com os filtros vazia
       let filter = "";
@@ -646,20 +607,12 @@ export default {
 
     // método que obtém a lista de marcas cadastradas
     getBrands() {
-      // definindo as configurações da requisição
-      let config = {
-        headers: {
-          Accept: "application/json",
-          Authorization: this.token,
-        },
-      };
-
       // obtendo a url customizada para a listagem
       let customListUrl = this.customizeListUrl();
 
       // executando a requisição get
       axios
-        .get(customListUrl, config)
+        .get(customListUrl)
         // se houve sucesso na requisição
         .then((response) => {
           // popula o array de marcas completo
@@ -774,8 +727,6 @@ export default {
       let config = {
         headers: {
           "Content-Type": "multipart/form-data",
-          Accept: "application/json",
-          Authorization: this.token,
         },
       };
 
@@ -843,14 +794,6 @@ export default {
       // se não houver confirmação, cancela
       if (!confirmation) return false;
 
-      // definindo as configurações da requisição
-      let config = {
-        headers: {
-          Accept: "application/json",
-          Authorization: this.token,
-        },
-      };
-
       // definindo os dados a serem enviados pela requisição
       let formData = new FormData();
       // alterando o método para que o Laravel entenda que trata-se de delete
@@ -863,7 +806,7 @@ export default {
 
       // executando a requisição post
       axios
-        .post(url, formData, config)
+        .post(url, formData)
         // se houve sucesso na requisição
         .then((response) => {
           // atribui status de sucesso para exibir o alert
@@ -900,8 +843,6 @@ export default {
       let config = {
         headers: {
           "Content-Type": "multipart/form-data",
-          Accept: "application/json",
-          Authorization: this.token,
         },
       };
 

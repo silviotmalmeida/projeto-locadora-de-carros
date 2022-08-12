@@ -101,6 +101,7 @@ return [
     |
     */
 
+    // validade do token em minutos
     'ttl' => env('JWT_TTL', 60),
 
     /*
@@ -120,6 +121,7 @@ return [
     |
     */
 
+    // período para permitir a renovação de um token expirado
     'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
 
     /*

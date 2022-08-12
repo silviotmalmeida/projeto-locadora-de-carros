@@ -41,9 +41,6 @@ Route::prefix('v1')->middleware('jwt.auth')->group(function () {
     // definindo a rota de detalhe do usuário autenticado
     Route::post('me', 'App\Http\Controllers\AuthController@me');
 
-    // definindo a rota de refresh do token de autorização
-    Route::post('refresh', 'App\Http\Controllers\AuthController@refresh');
-
     // definindo a rota de logout e expiração do token
     Route::post('logout', 'App\Http\Controllers\AuthController@logout');
 });
@@ -51,5 +48,5 @@ Route::prefix('v1')->middleware('jwt.auth')->group(function () {
 // definindo as rotas de autenticação
 Route::post('login', 'App\Http\Controllers\AuthController@login');
 
-
-
+// definindo a rota de refresh do token de autorização
+Route::post('refresh', 'App\Http\Controllers\AuthController@refresh');

@@ -5345,6 +5345,10 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
         image: {
           title: "Imagem",
           type: "image"
+        },
+        updated_at: {
+          title: "Última atualização",
+          type: "datetime"
         }
       },
       // quantidade de registros por página na listagem
@@ -5362,22 +5366,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
   },
   // propriedades computadas do componente
   computed: {
-    // token de autorização
-    token: function token() {
-      // obtendo o token através dos cookies para anexá-lo explicitamento no
-      // header das requisições
-      var token = document.cookie // removendo os espaços
-      .replace(/\s/g, "") // separando os cookies
-      .split(";") // encontrando o token de autorização
-      .find(function (key) {
-        return key.startsWith("token=");
-      }); // obtendo o corpo do token
-
-      token = token.split("=")[1]; // incluindo o prefixo 'Bearer ' ao token
-
-      token = "Bearer " + token;
-      return token;
-    },
     // informações filtradas da marca referente ao id armazenado na store
     // sempre que a store é atualizada, esta variável irá acompanhar
     brandData: function brandData() {
@@ -5391,21 +5379,16 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     // método que gera a url corrigida para filtrar na requisição os atributos definidos em brandsAttributes
     // bem como na definição da paginação
     customizeListUrl: function customizeListUrl() {
-      // obtendo a lista de atributos separada por vírgulas
-      var atr_brand = Object.keys(this.brandsAttributes).reduce(function (p, n) {
-        return p + "," + n;
-      }); // inicializando a url customizada
+      // inicializando a url customizada
       // se a url de paginação estiver definida, utiliza a mesma
       // senão utiliza a url base
-
       var customListUrl = this.paginationUrl ? this.paginationUrl : this.baseUrl; // se na url já existir a ?, refere-se a url com o atributo page incluído
       // logo os próximos atributos deverão ser separados por &
       // senão inclui a ?
 
-      customListUrl.includes("?") ? customListUrl += "&" : customListUrl += "?"; // incrementando a url base com os parâmetros de filtro e quantidades de item por página
+      customListUrl.includes("?") ? customListUrl += "&" : customListUrl += "?"; // incrementando a url base com a quantidade de itens por página
 
-      customListUrl += // "atr_brand=" + atr_brand + "&paginate=" + this.brandsPerPage;
-      "&paginate=" + this.brandsPerPage; // inicializando a variável com os filtros vazia
+      customListUrl += "&paginate=" + this.brandsPerPage; // inicializando a variável com os filtros vazia
 
       var filter = ""; // iterando sobre o array de filtros
 
@@ -5447,17 +5430,10 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
     getBrands: function getBrands() {
       var _this = this;
 
-      // definindo as configurações da requisição
-      var config = {
-        headers: {
-          Accept: "application/json",
-          Authorization: this.token
-        }
-      }; // obtendo a url customizada para a listagem
-
+      // obtendo a url customizada para a listagem
       var customListUrl = this.customizeListUrl(); // executando a requisição get
 
-      axios.get(customListUrl, config) // se houve sucesso na requisição
+      axios.get(customListUrl) // se houve sucesso na requisição
       .then(function (response) {
         // popula o array de marcas completo
         _this.brandsData = response.data; // popula o array de marcas limpo para envio ao componente table
@@ -5552,9 +5528,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // definindo as configurações da requisição
       var config = {
         headers: {
-          "Content-Type": "multipart/form-data",
-          Accept: "application/json",
-          Authorization: this.token
+          "Content-Type": "multipart/form-data"
         }
       }; // definindo os dados a serem inseridos no BD
 
@@ -5611,14 +5585,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // exibindo o diálogo de confirmação
       var confirmation = confirm("Tem certeza que deseja remover o registro?"); // se não houver confirmação, cancela
 
-      if (!confirmation) return false; // definindo as configurações da requisição
-
-      var config = {
-        headers: {
-          Accept: "application/json",
-          Authorization: this.token
-        }
-      }; // definindo os dados a serem enviados pela requisição
+      if (!confirmation) return false; // definindo os dados a serem enviados pela requisição
 
       var formData = new FormData(); // alterando o método para que o Laravel entenda que trata-se de delete
 
@@ -5627,7 +5594,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
       var url = this.baseUrl + "/" + brandId; // executando a requisição post
 
-      axios.post(url, formData, config) // se houve sucesso na requisição
+      axios.post(url, formData) // se houve sucesso na requisição
       .then(function (response) {
         // atribui status de sucesso para exibir o alert
         _this3.$store.state.request_status = "success"; // atribui as mensagens de sucesso para serem utilizadas no alert
@@ -5656,9 +5623,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       // definindo as configurações da requisição
       var config = {
         headers: {
-          "Content-Type": "multipart/form-data",
-          Accept: "application/json",
-          Authorization: this.token
+          "Content-Type": "multipart/form-data"
         }
       }; // definindo os dados a serem inseridos no BD
 
@@ -5977,10 +5942,6 @@ __webpack_require__.r(__webpack_exports__);
       this.$store.state.request_status = "";
       this.$store.state.request_messages = [];
     }
-  },
-  // filtros
-  filters: {
-    formatDateTime: function formatDateTime() {}
   }
 });
 
@@ -6372,11 +6333,7 @@ var render = function render() {
             disabled: ""
           },
           domProps: {
-            value: new Intl.DateTimeFormat("pt-BR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric"
-            }).format(new Date(_vm.brandData.created_at))
+            value: _vm._f("formatDateTime")(_vm.brandData.created_at)
           }
         })]), _vm._v(" "), _c("input-container-component", {
           attrs: {
@@ -6391,11 +6348,7 @@ var render = function render() {
             disabled: ""
           },
           domProps: {
-            value: new Intl.DateTimeFormat("pt-BR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric"
-            }).format(new Date(_vm.brandData.updated_at))
+            value: _vm._f("formatDateTime")(_vm.brandData.updated_at)
           }
         })]), _vm._v(" "), _vm.brandData.types.length ? [_c("input-container-component", {
           attrs: {
@@ -7068,7 +7021,7 @@ var render = function render() {
           width: "30",
           height: "30"
         }
-      })] : _vm.attributes[key].type === "text" ? [_vm._v(_vm._s(value))] : _vm._e()], 2);
+      })] : _vm.attributes[key].type === "text" ? [_vm._v(_vm._s(value))] : _vm.attributes[key].type === "datetime" ? [_vm._v(_vm._s(_vm._f("formatDateTime")(value)))] : _vm._e()], 2);
     }), _vm._v(" "), _vm.btn_read.visible || _vm.btn_update.visible || _vm.btn_delete.visible ? _c("td", [_vm.btn_read.visible ? _c("button", {
       staticClass: "btn btn-outline-primary btn-sm",
       attrs: {
@@ -7171,7 +7124,21 @@ vue__WEBPACK_IMPORTED_MODULE_0__["default"].component("pagination-component", (_
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
+// criando um filtro de formatação global para converter o datetime
+// para o formato dd/mm/aaaa hh:mm
 
+vue__WEBPACK_IMPORTED_MODULE_0__["default"].filter("formatDateTime", function (value) {
+  // se não foi passado nenhum valor, retorna vazio
+  if (!value) return ""; // formatando como dd/mm/aaaa hh:mm
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric"
+  }).format(new Date(value));
+});
 var app = new vue__WEBPACK_IMPORTED_MODULE_0__["default"]({
   el: "#app",
   // adicionando a store ao app
@@ -7186,6 +7153,9 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_0__["default"]({
   \***********************************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
+var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js"),
+    axios = _require["default"];
+
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 
 try {
@@ -7199,7 +7169,7 @@ try {
 
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
@@ -7213,6 +7183,62 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     forceTLS: true
 // });
+// definindo os interceptors do axios
+//
+// interceptando os requests
+
+axios.interceptors.request.use( // em caso de sucesso
+function (config) {
+  // altera o fluxo da requisição
+  //
+  // obtendo o token através dos cookies para anexá-lo explicitamento no
+  // header das requisições
+  var token = document.cookie // removendo os espaços
+  .replace(/\s/g, "") // separando os cookies
+  .split(";") // encontrando o token de autorização
+  .find(function (key) {
+    return key.startsWith("token=");
+  }); // obtendo o corpo do token
+
+  token = token.split("=")[1]; // incluindo o prefixo 'Bearer ' ao token
+
+  token = "Bearer " + token; // definindo de forma global os headers comuns a todas as requisições
+
+  config.headers.Accept = "application/json";
+  config.headers.Authorization = token; // prossegue com a requisição
+
+  return config;
+}, // em caso de erro
+function (error) {
+  // altera o fluxo da requisição
+  console.log("Erro no request: ", error); // prossegue com a rejeição
+
+  return Promise.reject(error);
+}); // interceptando as responses
+
+axios.interceptors.response.use( // em caso de sucesso
+function (response) {
+  // altera o fluxo da resposta
+  console.log("Antes da resposta ao frontend", response); // prossegue com a resposta
+
+  return response;
+}, // em caso de erro
+function (error) {
+  // altera o fluxo da reposta
+  //
+  // se o token estiver expirado
+  if (error.response.status == 401 && error.response.data.message == "Token has expired") {
+    // faz-se uma requisição de refresh do token
+    axios.post("http://0.0.0.0:8080/api/refresh") // em caso de sucesso
+    .then(function (response) {
+      // atualiza o cookie da sessão para permitir as requisições com autenticação
+      document.cookie = "token=" + response.data.token;
+    });
+  } // prossegue com a rejeição
+
+
+  return Promise.reject(error);
+});
 
 /***/ }),
 
