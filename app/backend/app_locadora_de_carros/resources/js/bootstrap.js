@@ -102,6 +102,8 @@ axios.interceptors.response.use(
                 .then((response) => {
                     // atualiza o cookie da sessão para permitir as requisições com autenticação
                     document.cookie = "token=" + response.data.token;
+                    // forçando a atualização da página
+                    window.location.reload();
                 });
         }
 

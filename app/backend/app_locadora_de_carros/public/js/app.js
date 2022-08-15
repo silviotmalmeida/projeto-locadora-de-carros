@@ -7232,7 +7232,9 @@ function (error) {
     axios.post("http://0.0.0.0:8080/api/refresh") // em caso de sucesso
     .then(function (response) {
       // atualiza o cookie da sessão para permitir as requisições com autenticação
-      document.cookie = "token=" + response.data.token;
+      document.cookie = "token=" + response.data.token; // forçando a atualização da página
+
+      window.location.reload();
     });
   } // prossegue com a rejeição
 
