@@ -10,7 +10,9 @@ O projeto encontra-se dockerizado para facilitar a implantação. As orientaçõ
 
 - Para iniciar o container utiliza-se o comando "sudo ./startContainers.sh";
 
-- Para instalar as dependências do projeto utiliza-se o comando "sudo ./openTerminal.sh" e "npm install";
+- Para instalar as dependências Composer do projeto utiliza-se o comando "sudo ./runComposerInstall";
+
+- Para instalar as dependências NPM do projeto utiliza-se o comando "sudo ./openTerminal.sh", navegar até a pasta do projeto (cd /root/app/app_locadora_de_carros) e executar "npm install";
 
 - Para compilar os arquivos do frontend do projeto utiliza-se o comando "sudo ./openTerminal.sh", navegar até a pasta do projeto (cd /root/app/app_locadora_de_carros) e executar "npm run dev";
 
@@ -19,6 +21,8 @@ O projeto encontra-se dockerizado para facilitar a implantação. As orientaçõ
 - Para aplicar as migrations utiliza-se o comando "sudo ./runMigrate.sh";
 
 - Para criar uma massa de dados de teste utiliza-se o comando "sudo ./runSeed.sh";
+
+- Para criar um link simbólico entre o storage local e a pasta pública do app utiliza-se o comando, na pasta raiz do projeto: "php artisan storage:link"
 
 - Para iniciar o servidor utiliza-se o comando "sudo ./runServer.sh";
 
